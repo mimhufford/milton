@@ -242,8 +242,8 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         case Action_COLOUR_PRESET_6: milton_set_brush_colour(milton, 0.2f, 0.9f, 0.6f); break;
         case Action_COLOUR_PRESET_7: milton_set_brush_colour(milton, 0.9f, 0.1f, 0.9f); break;
         case Action_COLOUR_PRESET_8: milton_set_brush_colour(milton, 0.1f, 0.9f, 0.9f); break;
-        case Action_COLOUR_PRESET_9: milton_set_brush_colour(milton, 1.0f, 1.0f, 1.0f); break;
-        case Action_COLOUR_PRESET_0: milton_set_brush_colour(milton, 0.0f, 0.0f, 0.0f); break;
+        case Action_COLOUR_PRESET_9: milton_set_brush_colour(milton, 1.0f, 1.0f, 0.8f); break;
+        case Action_COLOUR_PRESET_0: milton_set_brush_colour(milton, 1.0f, 0.0f, 0.5f); break;
         case Action_SET_BRUSH_ALPHA_10: {
             milton_set_brush_alpha(milton, 0.1f);
         } break;
