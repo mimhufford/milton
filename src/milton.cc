@@ -617,7 +617,7 @@ milton_get_brush_alpha(Milton const* milton)
 void
 settings_init(MiltonSettings* s)
 {
-    s->background_color = v3f{1,1,1};
+    s->background_color = v3f{0.2f, 0.2f, 0.2f};
     s->peek_out_increment = DEFAULT_PEEK_OUT_INCREMENT_LOG;
 }
 
