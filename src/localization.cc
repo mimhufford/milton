@@ -138,6 +138,16 @@ init_localization()
         EN(TXT_Action_MODE_PRIMITIVE_LINE, "Primitive Line");
         EN(TXT_Action_MODE_PRIMITIVE_RECTANGLE, "Primitive Rectangle");
         EN(TXT_Action_MODE_PRIMITIVE_GRID, "Primitive Grid");
+        EN(TXT_Action_COLOUR_PRESET_1, "Set colour to preset 1");
+        EN(TXT_Action_COLOUR_PRESET_2, "Set colour to preset 2");
+        EN(TXT_Action_COLOUR_PRESET_3, "Set colour to preset 3");
+        EN(TXT_Action_COLOUR_PRESET_4, "Set colour to preset 4");
+        EN(TXT_Action_COLOUR_PRESET_5, "Set colour to preset 5");
+        EN(TXT_Action_COLOUR_PRESET_6, "Set colour to preset 6");
+        EN(TXT_Action_COLOUR_PRESET_7, "Set colour to preset 7");
+        EN(TXT_Action_COLOUR_PRESET_8, "Set colour to preset 8");
+        EN(TXT_Action_COLOUR_PRESET_9, "Set colour to preset 9");
+        EN(TXT_Action_COLOUR_PRESET_0, "Set colour to preset 0");
         EN(TXT_Action_SET_BRUSH_ALPHA_10, "Set alpha to 10%");
         EN(TXT_Action_SET_BRUSH_ALPHA_20, "Set alpha to 20%");
         EN(TXT_Action_SET_BRUSH_ALPHA_30, "Set alpha to 30%");

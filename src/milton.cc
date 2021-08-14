@@ -590,6 +590,12 @@ milton_decrease_brush_size(Milton* milton)
     }
 }
 
+void milton_set_brush_colour(Milton* milton, float r, float g, float b)
+{
+    milton->brushes[milton_get_brush_enum(milton)].color = v4f{r,g,b,1};
+    gui_picker_from_rgb(&milton->gui->picker, v3f{r,g,b});
+}
+
 void
 milton_set_brush_alpha(Milton* milton, float alpha)
 {

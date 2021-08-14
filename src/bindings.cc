@@ -75,16 +75,27 @@ set_default_bindings(MiltonBindings* bs)
     binding(bs, Modifier_NONE, Binding::F1, Action_HELP);
     binding(bs, Modifier_NONE, Binding::TAB, Action_TOGGLE_GUI);
 
-    binding(bs, Modifier_NONE, '1', Action_SET_BRUSH_ALPHA_10);
-    binding(bs, Modifier_NONE, '2', Action_SET_BRUSH_ALPHA_20);
-    binding(bs, Modifier_NONE, '3', Action_SET_BRUSH_ALPHA_30);
-    binding(bs, Modifier_NONE, '4', Action_SET_BRUSH_ALPHA_40);
-    binding(bs, Modifier_NONE, '5', Action_SET_BRUSH_ALPHA_50);
-    binding(bs, Modifier_NONE, '6', Action_SET_BRUSH_ALPHA_60);
-    binding(bs, Modifier_NONE, '7', Action_SET_BRUSH_ALPHA_70);
-    binding(bs, Modifier_NONE, '8', Action_SET_BRUSH_ALPHA_80);
-    binding(bs, Modifier_NONE, '9', Action_SET_BRUSH_ALPHA_90);
-    binding(bs, Modifier_NONE, '0', Action_SET_BRUSH_ALPHA_100);
+    binding(bs, Modifier_NONE, '1', Action_COLOUR_PRESET_1);
+    binding(bs, Modifier_NONE, '2', Action_COLOUR_PRESET_2);
+    binding(bs, Modifier_NONE, '3', Action_COLOUR_PRESET_3);
+    binding(bs, Modifier_NONE, '4', Action_COLOUR_PRESET_4);
+    binding(bs, Modifier_NONE, '5', Action_COLOUR_PRESET_5);
+    binding(bs, Modifier_NONE, '6', Action_COLOUR_PRESET_6);
+    binding(bs, Modifier_NONE, '7', Action_COLOUR_PRESET_7);
+    binding(bs, Modifier_NONE, '8', Action_COLOUR_PRESET_8);
+    binding(bs, Modifier_NONE, '9', Action_COLOUR_PRESET_9);
+    binding(bs, Modifier_NONE, '0', Action_COLOUR_PRESET_0);
+
+    binding(bs, Modifier_CTRL, '1', Action_SET_BRUSH_ALPHA_10);
+    binding(bs, Modifier_CTRL, '2', Action_SET_BRUSH_ALPHA_20);
+    binding(bs, Modifier_CTRL, '3', Action_SET_BRUSH_ALPHA_30);
+    binding(bs, Modifier_CTRL, '4', Action_SET_BRUSH_ALPHA_40);
+    binding(bs, Modifier_CTRL, '5', Action_SET_BRUSH_ALPHA_50);
+    binding(bs, Modifier_CTRL, '6', Action_SET_BRUSH_ALPHA_60);
+    binding(bs, Modifier_CTRL, '7', Action_SET_BRUSH_ALPHA_70);
+    binding(bs, Modifier_CTRL, '8', Action_SET_BRUSH_ALPHA_80);
+    binding(bs, Modifier_CTRL, '9', Action_SET_BRUSH_ALPHA_90);
+    binding(bs, Modifier_CTRL, '0', Action_SET_BRUSH_ALPHA_100);
 
     binding_with_release(bs, Modifier_NONE, '`', Action_PEEK_OUT, ActionRelease_PEEK_OUT);
     binding_with_release(bs, Modifier_SHIFT, Binding::UNBOUND, Action_DRAG_BRUSH_SIZE, ActionRelease_DRAG_BRUSH_SIZE);
@@ -223,6 +234,16 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         case Action_MODE_PRIMITIVE_GRID: {
             input->mode_to_set = MiltonMode::PRIMITIVE_GRID;
         } break;
+        case Action_COLOUR_PRESET_1: milton_set_brush_colour(milton, 0.9f, 0.1f, 0.1f); break;
+        case Action_COLOUR_PRESET_2: milton_set_brush_colour(milton, 0.1f, 0.9f, 0.1f); break;
+        case Action_COLOUR_PRESET_3: milton_set_brush_colour(milton, 0.1f, 0.1f, 0.9f); break;
+        case Action_COLOUR_PRESET_4: milton_set_brush_colour(milton, 0.9f, 1.0f, 0.1f); break;
+        case Action_COLOUR_PRESET_5: milton_set_brush_colour(milton, 1.0f, 0.4f, 0.0f); break;
+        case Action_COLOUR_PRESET_6: milton_set_brush_colour(milton, 0.3f, 0.8f, 0.7f); break;
+        case Action_COLOUR_PRESET_7: milton_set_brush_colour(milton, 0.9f, 0.1f, 0.9f); break;
+        case Action_COLOUR_PRESET_8: milton_set_brush_colour(milton, 0.1f, 0.9f, 0.9f); break;
+        case Action_COLOUR_PRESET_9: milton_set_brush_colour(milton, 1.0f, 1.0f, 1.0f); break;
+        case Action_COLOUR_PRESET_0: milton_set_brush_colour(milton, 0.0f, 0.0f, 0.0f); break;
         case Action_SET_BRUSH_ALPHA_10: {
             milton_set_brush_alpha(milton, 0.1f);
         } break;
