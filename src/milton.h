@@ -18,6 +18,17 @@
 #define HOVER_FLASH_THRESHOLD_MS    500  // How long does the hidden brush hover show when it has changed size.
 #define MODE_STACK_MAX 64
 
+#define COLOUR_PRESET_1 {0.9f, 0.1f, 0.1f}
+#define COLOUR_PRESET_2 {0.1f, 0.9f, 0.1f}
+#define COLOUR_PRESET_3 {0.1f, 0.1f, 0.9f}
+#define COLOUR_PRESET_4 {0.9f, 1.0f, 0.1f}
+#define COLOUR_PRESET_5 {1.0f, 0.4f, 0.0f}
+#define COLOUR_PRESET_6 {0.2f, 0.9f, 0.6f}
+#define COLOUR_PRESET_7 {0.9f, 0.1f, 0.9f}
+#define COLOUR_PRESET_8 {0.1f, 0.9f, 0.9f}
+#define COLOUR_PRESET_9 {1.0f, 0.0f, 0.5f}
+#define COLOUR_PRESET_0 {1.0f, 1.0f, 0.8f}
+
 struct MiltonGLState
 {
     GLuint quad_program;
@@ -325,7 +336,7 @@ void    milton_increase_brush_size(Milton* milton);
 void    milton_decrease_brush_size(Milton* milton);
 float   milton_get_brush_alpha(Milton const* milton);
 void    milton_set_brush_alpha(Milton* milton, float alpha);
-void    milton_set_brush_colour(Milton* milton, float r, float g, float b);
+void    milton_set_brush_colour(Milton* milton, v3f colour);
 
 // Returns false if the pan_delta moves the pan vector outside of the canvas.
 void milton_resize_and_pan(Milton* milton, v2l pan_delta, v2i new_screen_size);

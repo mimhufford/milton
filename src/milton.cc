@@ -590,10 +590,10 @@ milton_decrease_brush_size(Milton* milton)
     }
 }
 
-void milton_set_brush_colour(Milton* milton, float r, float g, float b)
+void milton_set_brush_colour(Milton* milton, v3f colour)
 {
-    milton->brushes[milton_get_brush_enum(milton)].color = v4f{r,g,b,1};
-    gui_picker_from_rgb(&milton->gui->picker, v3f{r,g,b});
+    milton->brushes[milton_get_brush_enum(milton)].color = v4f{colour.r, colour.g, colour.b, 1};
+    gui_picker_from_rgb(&milton->gui->picker, colour);
 }
 
 void
@@ -866,6 +866,8 @@ milton_reset_canvas_and_set_default(Milton* milton)
 
     milton_set_default_canvas_file(milton);
     upload_gui(milton);
+
+    milton_set_brush_colour(milton, COLOUR_PRESET_0);
 }
 
 static void
