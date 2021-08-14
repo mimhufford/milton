@@ -741,7 +741,7 @@ milton_init(Milton* milton, i32 width, i32 height, f32 ui_scale, PATH_CHAR* file
     }
 
     // Default mode GUI visibility
-    milton->mode_gui_visibility[Milton::GuiVisibleCategory_DRAWING] = true;
+    milton->mode_gui_visibility[Milton::GuiVisibleCategory_DRAWING] = false;
 
 #if MILTON_ENABLE_PROFILING
     milton->viz_window_visible = false;  // hidden by default
