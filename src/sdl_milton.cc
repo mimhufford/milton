@@ -678,10 +678,7 @@ milton_main(bool is_fullscreen, char* file_to_open)
 
     milton_init(milton, platform.width, platform.height, platform.ui_scale, (PATH_CHAR*)file_to_open_);
     milton->platform = &platform;
-    milton->gui->menu_visible = true;
-    if ( is_fullscreen ) {
-        milton->gui->menu_visible = false;
-    }
+    milton->gui->menu_visible = false;
 
     milton_resize_and_pan(milton, {}, {platform.width, platform.height});
 
