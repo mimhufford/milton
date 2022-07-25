@@ -183,7 +183,6 @@ milton_load(Milton* milton)
                         READ(stroke.points, sizeof(v2l), (size_t)stroke.num_points, fd);
                         stroke.pressures = arena_alloc_array(&canvas->arena, stroke.num_points, f32);
                         READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
-                        READ(&stroke.layer_id, sizeof(i32), 1, fd);
 #if STROKE_DEBUG_VIZ
                         stroke.debug_flags = arena_alloc_array(&canvas->arena, stroke.num_points, int);
 #endif
@@ -213,7 +212,6 @@ milton_load(Milton* milton)
 #endif
                     stroke.pressures = arena_alloc_array(&canvas->arena, stroke.num_points, f32);
                     READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
-                    READ(&stroke.layer_id, sizeof(i32), 1, fd);
                     stroke.bounding_rect = bounding_box_for_stroke(&stroke);
                     push(&milton->canvas->strokes, stroke);
                 }
@@ -365,8 +363,7 @@ milton_save(Milton* milton)
                                     !write_data(&stroke->flags, sizeof(stroke->flags), 1, fd) ||
                                     !write_data(&stroke->num_points, sizeof(i32), 1, fd) ||
                                     !write_data(stroke->points, sizeof(v2l), (size_t)stroke->num_points, fd) ||
-                                    !write_data(stroke->pressures, sizeof(f32), (size_t)stroke->num_points, fd) ||
-                                    !write_data(&stroke->layer_id, sizeof(i32), 1, fd) ) {
+                                    !write_data(stroke->pressures, sizeof(f32), (size_t)stroke->num_points, fd) ) {
                                 could_write_strokes = false;
                                 break;
                             }

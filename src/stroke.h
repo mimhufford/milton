@@ -31,7 +31,6 @@ struct Stroke
     v2l*            points;
     f32*            pressures;
     i32             num_points;
-    i32             layer_id;
     Rect            bounding_rect;
     RenderHandle    render_handle;
 
