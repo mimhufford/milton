@@ -53,60 +53,13 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
         // left
         ImGui::BeginChild("left pane", ImVec2(150, 0), true);
 
-        static b32 is_renaming = false;
-        static i32 layer_renaming_idx = -1;
-        static b32 focus_rename_field = false;
-
-
         Layer* layer = milton->canvas->root_layer;
         while ( layer->next ) { layer = layer->next; }  // Move to the top layer.
         while ( layer ) {
-            // Draw the layers list. If in renaming mode, draw the layer that's being renamed as an InputText.
-            // Else just draw them as a list of Selectables.
-            if ( !ImGui::IsWindowFocused() ) {
-                is_renaming = false;
-            }
-
-            if ( is_renaming ) {
-                if ( layer->id == layer_renaming_idx ) {
-                    if ( focus_rename_field ) {
-                        ImGui::SetKeyboardFocusHere(0);
-                        focus_rename_field = false;
-                    }
-                    if ( ImGui::InputText("##rename",
-                                          milton->canvas->working_layer->name,
-                                          13,
-                                          //MAX_LAYER_NAME_LEN,
-                                          ImGuiInputTextFlags_EnterReturnsTrue
-                                          //,ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL
-                                         )) {
-                        is_renaming = false;
-                    }
-                }
-                else {
-                    if ( ImGui::Selectable(layer->name,
-                                           milton->canvas->working_layer == layer,
-                                           ImGuiSelectableFlags_AllowDoubleClick) ) {
-                        if ( ImGui::IsMouseDoubleClicked(0) ) {
-                            layer_renaming_idx = layer->id;
-                            focus_rename_field = true;
-                        }
-                        is_renaming = false;
-                        milton_set_working_layer(milton, layer);
-                    }
-                }
-            }
-            else {
-                if ( ImGui::Selectable(layer->name,
-                                       milton->canvas->working_layer == layer,
-                                       ImGuiSelectableFlags_AllowDoubleClick) ) {
-                    if ( ImGui::IsMouseDoubleClicked(0) ) {
-                        layer_renaming_idx = layer->id;
-                        is_renaming = true;
-                        focus_rename_field = true;
-                    }
-                    milton_set_working_layer(milton, layer);
-                }
+            if ( ImGui::Selectable("Layer",
+                                    milton->canvas->working_layer == layer,
+                                    ImGuiSelectableFlags_AllowDoubleClick) ) {
+                milton_set_working_layer(milton, layer);
             }
 
             layer = layer->prev;

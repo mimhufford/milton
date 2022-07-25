@@ -167,21 +167,8 @@ milton_load(Milton* milton)
         READ(&layer_guid, sizeof(i32), 1, fd);
 
         for ( int layer_i = 0; ok && layer_i < num_layers; ++layer_i ) {
-            i32 len = 0;
-            READ(&len, sizeof(i32), 1, fd);
-
-            if ( len > MAX_LAYER_NAME_LEN ) {
-                milton_log("Corrupt file. Layer name is too long.\n");
-                ok = false;
-                goto END;
-            }
-
             if (ok) { milton_new_layer(milton); }
-
             Layer* layer = milton->canvas->working_layer;
-
-            READ(layer->name, sizeof(char), (size_t)len, fd);
-
             READ(&layer->id, sizeof(i32), 1, fd);
             READ(&layer->_flags, sizeof(layer->_flags), 1, fd);
 
@@ -407,14 +394,10 @@ milton_save(Milton* milton)
                         milton_die_gracefully("FATAL. Number of strokes in layer greater than can be stored in file format. ");
                     }
                     i32 num_strokes = (i32)layer->strokes.count;
-                    char* name = layer->name;
-                    i32 len = (i32)(strlen(name) + 1);
 
                     bool could_write_strokes = true;
 
-                    if ( write_data(&len, sizeof(i32), 1, fd) &&
-                         write_data(name, sizeof(char), (size_t)len, fd) &&
-                         write_data(&layer->id, sizeof(i32), 1, fd) &&
+                    if ( write_data(&layer->id, sizeof(i32), 1, fd) &&
                          write_data(&layer->_flags, sizeof(layer->_flags), 1, fd) &&
                          write_data(&num_strokes, sizeof(i32), 1, fd) ) {
                         for ( i32 stroke_i = 0;

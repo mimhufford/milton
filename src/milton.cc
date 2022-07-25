@@ -923,7 +923,6 @@ milton_new_layer_with_id(Milton* milton, i32 new_id)
         layer->strokes.arena = &canvas->arena;
         strokelist_init_bucket(&layer->strokes.root);
     }
-    snprintf(layer->name, MAX_LAYER_NAME_LEN, "Layer %d", layer->id);
 
     if ( canvas->root_layer != NULL ) {
         Layer* top = layer::get_topmost(canvas->root_layer);
