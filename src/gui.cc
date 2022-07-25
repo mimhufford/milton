@@ -218,16 +218,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
 
                 ImGui::Separator();
 
-                if ( ImGui::Button(loc(TXT_blur)) ) {
-                    LayerEffect* e = arena_alloc_elem(&milton->canvas_arena, LayerEffect);
-                    e->next = milton->canvas->working_layer->effects;
-                    milton->canvas->working_layer->effects = e;
-                    e->enabled = true;
-                    e->blur.original_scale = 1;
-                    e->blur.kernel_size = 10;
-                    input->flags |= (i32)MiltonInputFlags_FULL_REFRESH;
-                }
-
                 LayerEffect* prev = NULL;
                 int effect_id = 1;
                 for ( LayerEffect* e = milton->canvas->working_layer->effects; e != NULL; e = e->next ) {
@@ -235,22 +225,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
                     static bool v = 0;
                     if ( ImGui::Checkbox(loc(TXT_enabled), (bool*)&e->enabled) ) {
                         input->flags |= MiltonInputFlags_FULL_REFRESH;
-                    }
-                    if ( ImGui::SliderInt(loc(TXT_level), &e->blur.kernel_size, 2, 100, 0) ) {
-                        if (e->blur.kernel_size % 2 == 0) {
-                            --e->blur.kernel_size;
-                        }
-                        input->flags |= MiltonInputFlags_FULL_REFRESH;
-                    }
-                    {
-                        if (ImGui::Button(loc(TXT_delete_blur))) {
-                            if (prev) {
-                                prev->next = e->next;
-                            } else {  // Was the first.
-                                milton->canvas->working_layer->effects = e->next;
-                            }
-                            input->flags |= (i32)MiltonInputFlags_FULL_REFRESH;
-                        }
                     }
                     ImGui::PopID();
                     prev = e;

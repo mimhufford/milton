@@ -1566,30 +1566,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
     b32 has_working_stroke = milton->working_stroke.num_points > 0;
 
-    if (has_working_stroke) {
-        b32 has_blur = false;
-
-        Layer* layer = milton->canvas->root_layer;
-        while (layer) {
-            if (layer->flags & LayerFlags_VISIBLE) {
-                LayerEffect* e = layer->effects;
-                while (e) {
-                    if (e->enabled && e->type == LayerEffectType_BLUR) {
-                        has_blur = true;
-                        break;
-                    }
-                    e = e->next;
-                }
-            }
-            if (has_blur) { break; }
-            layer = layer->next;
-        }
-
-        if (has_blur) {
-            milton->render_settings.do_full_redraw = true;
-        }
-    }
-
     // Note: We flip the rectangles. GL is bottom-left by default.
     if ( milton->render_settings.do_full_redraw ) {
         view_width = milton->view->screen_size.w;

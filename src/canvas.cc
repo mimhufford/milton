@@ -179,20 +179,6 @@ namespace layer
         return peek(&layer->strokes);
     }
 
-    b32
-    layer_has_blur_effect(Layer* layer)
-    {
-        b32 result = false;
-        for ( LayerEffect* e = layer->effects; e != NULL; e = e->next ) {
-            if ( e->enabled && e->type == LayerEffectType_BLUR ) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
-
     void
     layer_toggle_visibility(Layer* layer)
     {

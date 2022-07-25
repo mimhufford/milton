@@ -1462,52 +1462,6 @@ gpu_render_canvas(RenderBackend* r, i32 view_x, i32 view_y,
             // layer_texture, we apply all layer effects.
 
             GLuint layer_post_effects = layer_texture;
-            {
-                // eraser_texture will be rewritten below with the
-                // contents of canvas_texture. We use it here for
-                // the layer effects.
-                GLuint out_texture = r->eraser_texture;
-                GLuint in_texture  = layer_texture;
-                glDisable(GL_BLEND);
-                glDisable(GL_DEPTH_TEST);
-                for ( LayerEffect* e = re->effects; e != NULL; e = e->next ) {
-                    if ( e->enabled == false ) { continue; }
-
-                    if ( e->type == LayerEffectType_BLUR ) {
-                        glBindTexture(texture_target, in_texture);
-                        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                  texture_target, out_texture, 0);
-
-                        // Three box filter iterations approximate a Gaussian blur
-                        for (int blur_iter = 0; blur_iter < 3; ++blur_iter) {
-                            // Box filter implementation uses the separable property.
-                            // Apply horizontal pass and then vertical pass.
-                            int kernel_size = e->blur.kernel_size * e->blur.original_scale;
-                            box_filter_pass(r, kernel_size, BoxFilterPass_VERTICAL);
-                            swap(out_texture, in_texture);
-                            glBindTexture(texture_target, in_texture);
-                            glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                      texture_target, out_texture, 0);
-
-
-                            box_filter_pass(r, kernel_size, BoxFilterPass_HORIZONTAL);
-                            swap(out_texture, in_texture);
-                            glBindTexture(texture_target, in_texture);
-                            glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                      texture_target, out_texture, 0);
-
-                        }
-                        swap(out_texture, in_texture);
-                        glBindTexture(texture_target, in_texture);
-                        glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                  texture_target, out_texture, 0);
-                        layer_post_effects = out_texture;
-                    }
-                }
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-                glEnable(GL_DEPTH_TEST);
-            }
 
             // Blit layer contents to canvas_texture
             {

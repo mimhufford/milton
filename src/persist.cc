@@ -259,22 +259,6 @@ milton_load(Milton* milton)
             if ( milton_binary_version >= 4 ) {
                 i64 num_effects = 0;
                 READ(&num_effects, sizeof(num_effects), 1, fd);
-                if ( num_effects > 0 ) {
-                    LayerEffect** e = &layer->effects;
-                    for ( i64 i = 0; i < num_effects; ++i ) {
-                        mlt_assert(*e == NULL);
-                        *e = arena_alloc_elem(&canvas->arena, LayerEffect);
-                        READ(&(*e)->type, sizeof((*e)->type), 1, fd);
-                        READ(&(*e)->enabled, sizeof((*e)->enabled), 1, fd);
-                        switch ((*e)->type) {
-                            case LayerEffectType_BLUR: {
-                                READ(&(*e)->blur.original_scale, sizeof((*e)->blur.original_scale), 1, fd);
-                                READ(&(*e)->blur.kernel_size, sizeof((*e)->blur.kernel_size), 1, fd);
-                            } break;
-                        }
-                        e = &(*e)->next;
-                    }
-                }
             }
         }
         milton->view->working_layer_id = saved_working_layer_id;
@@ -487,24 +471,7 @@ milton_save(Milton* milton)
                         for ( LayerEffect* e = layer->effects; e != NULL; e = e->next ) {
                             ++num_effects;
                         }
-                        if ( write_data(&num_effects, sizeof(num_effects), 1, fd) ) {
-                            for ( LayerEffect* e = layer->effects; e != NULL; e = e->next ) {
-                                if ( write_data(&e->type, sizeof(e->type), 1, fd) &&
-                                     write_data(&e->enabled, sizeof(e->enabled), 1, fd) ) {
-                                    switch (e->type) {
-                                        case LayerEffectType_BLUR: {
-                                            if ( !write_data(&e->blur.original_scale, sizeof(e->blur.original_scale), 1, fd) ||
-                                                 !write_data(&e->blur.kernel_size, sizeof(e->blur.kernel_size), 1, fd) ) {
-                                                could_write_effects = false;
-                                            }
-                                        } break;
-                                    }
-                                }
-                                else {
-                                    could_write_effects = false;
-                                }
-                            }
-                        }
+                        write_data(&num_effects, sizeof(num_effects), 1, fd);
                     }
                     if (!could_write_strokes || !could_write_effects) {
                         could_write_layer_contents = false;
