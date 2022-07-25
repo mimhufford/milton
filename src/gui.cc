@@ -15,41 +15,6 @@
 #define NUM_BUTTONS 5
 #define BOUNDS_RADIUS_PX 80
 
-// If reset_gui is true, the default window position and size will be set.
-void
-gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f32 brush_window_height, PlatformSettings* prefs, b32 reset_gui)
-{
-    float ui_scale = milton->gui->scale;
-    MiltonGui* gui = milton->gui;
-    const Rect pbounds = get_bounds_for_picker_and_colors(&gui->picker);
-    CanvasState* canvas = milton->canvas;
-
-    // Layer window
-
-    // Use default size on first program start on this computer.
-    f32 left   = ui_scale*10;
-    f32 top    = ui_scale*20 + (float)pbounds.bottom + brush_window_height;
-    f32 width  = ui_scale*300;
-    f32 height = ui_scale*230;
-    if ( reset_gui ) {
-        ImGui::SetNextWindowPos(ImVec2(left, top));
-        ImGui::SetNextWindowSize(ImVec2(width, height));
-    }
-    else {
-        if ( prefs->layer_window_width != 0 && prefs->layer_window_height != 0 ) {
-            // If there are preferences already, use those for the layer window.
-            left   = prefs->layer_window_left;
-            top    = prefs->layer_window_top;
-            width  = prefs->layer_window_width;
-            height = prefs->layer_window_height;
-        }
-
-        ImGui::SetNextWindowPos(ImVec2(left, top), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiSetCond_FirstUseEver);
-    }
-}
-
-
 // gui_brush_window returns the height of the rendered brush tool window. This can be used to position other windows below it.
 // If reset_gui is true, the default window position and size will be set.
 i32
@@ -72,7 +37,7 @@ gui_brush_window(MiltonInput* input, PlatformState* platform, Milton* milton, Pl
     }
     else {
         if ( prefs->brush_window_width != 0 && prefs->brush_window_height ) {
-            // If there are preferences already, use those for the layer window.
+            // If there are preferences already, use those
             left =   prefs->brush_window_left;
             top =    prefs->brush_window_top;
             width =  prefs->brush_window_width;
@@ -166,7 +131,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
             if ( ImGui::BeginMenu(loc(TXT_file)) ) {
                 if ( ImGui::MenuItem(loc(TXT_new_milton_canvas)) ) {
                     b32 save_file = false;
-                    if ( milton->canvas->root_layer->strokes.count > 0 ) {
+                    if ( milton->canvas->strokes.count > 0 ) {
                         if ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) {
                             save_file = platform_dialog_yesno(loc(TXT_default_will_be_cleared), "Save?");
                         }
@@ -196,7 +161,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                     // If current canvas is MiltonPersist, then prompt to save
                     if ( ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) ) {
                         b32 save_file = false;
-                        if ( milton->canvas->root_layer->strokes.count > 0 ) {
+                        if ( milton->canvas->strokes.count > 0 ) {
                             save_file = platform_dialog_yesno(loc(TXT_default_will_be_cleared), "Save?");
                         }
                         if ( save_file ) {
@@ -470,8 +435,6 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
     if ( gui->visible && should_show_windows ) {
         i32 brush_window_height = gui_brush_window(input, platform, milton, prefs, reset_gui);
 
-        gui_layer_window(input, platform, milton, brush_window_height, prefs, reset_gui);
-
         // Settings window
         if ( show_settings ) {
             ImGui::SetNextWindowSize(ImVec2(ui_scale*400, ui_scale*400),
@@ -552,7 +515,7 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
             ImGui::SetNextWindowSize(ImVec2(ui_scale*500, ui_scale*100), ImGuiSetCond_FirstUseEver);
             if ( ImGui::Begin("History Slider") ) {
                 ImGui::SliderInt("History", &gui->history, 0,
-                                 milton->canvas->root_layer->strokes.count);
+                                 milton->canvas->strokes.count);
             } ImGui::End();
 
         }
@@ -717,7 +680,7 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
 
             ImGui::Dummy({0,30});
 
-            i64 stroke_count = milton->canvas->root_layer->strokes.count;
+            i64 stroke_count = milton->canvas->strokes.count;
 
             auto* view = milton->view;
             int screen_height = view->screen_size.h * view->scale;

@@ -117,7 +117,7 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         } break;
         case Action_NEW: {
             YesNoCancelAnswer save_file = YesNoCancelAnswer::NO_;
-            if ( milton->canvas->root_layer->strokes.count > 0 ) {
+            if ( milton->canvas->strokes.count > 0 ) {
                 if ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) {
                     save_file = platform_dialog_yesnocancel(default_will_be_lost, "Save?");
                 }
@@ -163,7 +163,7 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
             // If current canvas is MiltonPersist, then prompt to save
             if ( ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) ) {
                 b32 save_file = false;
-                if ( milton->canvas->root_layer->strokes.count > 0 ) {
+                if ( milton->canvas->strokes.count > 0 ) {
                     save_file = platform_dialog_yesno(default_will_be_lost, "Save?");
                 }
                 if ( save_file ) {

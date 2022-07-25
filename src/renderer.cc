@@ -818,18 +818,15 @@ gpu_get_viewport_limits(RenderBackend* r, float* out_viewport_limits)
 }
 
 i32
-gpu_get_num_clipped_strokes(Layer* root_layer)
+gpu_get_num_clipped_strokes(StrokeList strokes)
 {
     i32 count = 0;
     #if MILTON_ENABLE_PROFILING
-    for ( Layer* l = root_layer; l != NULL; l = l->next ) {
-        StrokeList strokes = l->strokes;
-        for ( i64 si = 0; si < strokes.count; ++si ) {
-            Stroke* s = strokes[si];
-            RenderElement* re = get_render_element(s->render_handle);
-            if ( re && re->vbo_stroke != 0 ) {
-                ++count;
-            }
+    for ( i64 si = 0; si < strokes.count; ++si ) {
+        Stroke* s = strokes[si];
+        RenderElement* re = get_render_element(s->render_handle);
+        if ( re && re->vbo_stroke != 0 ) {
+            ++count;
         }
     }
     #endif
@@ -1190,20 +1187,17 @@ gpu_free_strokes(Stroke* strokes, i64 count, RenderBackend* r)
 void
 gpu_free_strokes(RenderBackend* r, CanvasState* canvas)
 {
-    if ( canvas->root_layer != NULL ) {
-        Layer* l = canvas->root_layer;
-        StrokeList* sl = &l->strokes;
-        StrokeBucket* bucket = &sl->root;
-        i64 count = sl->count;
-        while ( bucket ) {
-            if ( count >= STROKELIST_BUCKET_COUNT ) {
-                count -= STROKELIST_BUCKET_COUNT;
-                gpu_free_strokes(bucket->data, STROKELIST_BUCKET_COUNT, r);
-            } else {
-                gpu_free_strokes(bucket->data, count, r);
-            }
-            bucket = bucket->next;
+    StrokeList* sl = &canvas->strokes;
+    StrokeBucket* bucket = &sl->root;
+    i64 count = sl->count;
+    while ( bucket ) {
+        if ( count >= STROKELIST_BUCKET_COUNT ) {
+            count -= STROKELIST_BUCKET_COUNT;
+            gpu_free_strokes(bucket->data, STROKELIST_BUCKET_COUNT, r);
+        } else {
+            gpu_free_strokes(bucket->data, count, r);
         }
+        bucket = bucket->next;
     }
 }
 
@@ -1211,7 +1205,7 @@ void
 gpu_clip_strokes_and_update(Arena* arena,
                             RenderBackend* r,
                             CanvasView* view,
-                            Layer* root_layer, Stroke* working_stroke,
+                            StrokeList strokes, Stroke* working_stroke,
                             i32 x, i32 y, i32 w, i32 h, ClipFlags flags)
 {
     DArray<RenderElement>* clip_array = &r->clip_array;
@@ -1230,21 +1224,20 @@ gpu_clip_strokes_and_update(Arena* arena,
             r->clipped_count = 0;
         }
         #endif
-        Layer* l = root_layer;
-        StrokeBucket* bucket = &l->strokes.root;
+        StrokeBucket* bucket = &strokes.root;
         i64 bucket_i = 0;
 
         while ( bucket ) {
             i64 count = 0;
-            if ( l->strokes.count < bucket_i * STROKELIST_BUCKET_COUNT ) {
+            if ( strokes.count < bucket_i * STROKELIST_BUCKET_COUNT ) {
                 // There is an allocated bucket but we have already iterated
                 // through all the actual strokes.
                 break;
             }
-            if ( l->strokes.count - bucket_i*STROKELIST_BUCKET_COUNT >= STROKELIST_BUCKET_COUNT ) {
+            if ( strokes.count - bucket_i*STROKELIST_BUCKET_COUNT >= STROKELIST_BUCKET_COUNT ) {
                 count = STROKELIST_BUCKET_COUNT;
             } else {
-                count = l->strokes.count % STROKELIST_BUCKET_COUNT;
+                count = strokes.count % STROKELIST_BUCKET_COUNT;
             }
 
             Rect bbox = bucket->bounding_rect;
@@ -1723,7 +1716,7 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
 
     glViewport(0, 0, buf_w, buf_h);
     glScissor(0, 0, buf_w, buf_h);
-    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->root_layer,
+    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->strokes,
                                 &milton->working_stroke, 0, 0, buf_w, buf_h);
 
     gpu_render_canvas(r, 0, 0, buf_w, buf_h, background_alpha);
@@ -1787,7 +1780,7 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
     gpu_update_canvas(r, milton->canvas, view);
 
     // Re-render
-    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->root_layer,
+    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->strokes,
                                 &milton->working_stroke, 0, 0, r->width,
                                 r->height);
     gpu_render(r, 0, 0, r->width, r->height);

@@ -66,7 +66,6 @@ enum BrushEnum
 struct MiltonGui;
 struct RenderBackend;
 struct CanvasView;
-struct Layer;
 struct MiltonPersist;
 struct MiltonBindings;
 
@@ -75,7 +74,7 @@ struct CanvasState
 {
     Arena  arena;
 
-    Layer*  root_layer;
+    StrokeList strokes;
 
     i32 history;
     i32 redo_stack;

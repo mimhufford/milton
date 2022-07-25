@@ -23,7 +23,7 @@ struct RenderBackend;
 struct CanvasView;
 struct Exporter;
 struct Stroke;
-struct Layer;
+struct StrokeList;
 struct Milton;
 struct CanvasState;
 
@@ -56,7 +56,7 @@ void gpu_update_background(RenderBackend* renderer, v3f background_color);
 void gpu_update_canvas(RenderBackend* renderer, CanvasState* canvas, CanvasView* view);
 
 void gpu_get_viewport_limits(RenderBackend* renderer, float* out_viewport_limits);
-i32  gpu_get_num_clipped_strokes(Layer* root_layer);
+i32  gpu_get_num_clipped_strokes(StrokeList strokes);
 
 
 enum CookStrokeOpt
@@ -82,7 +82,7 @@ enum ClipFlags
 void gpu_clip_strokes_and_update(Arena* arena,
                                  RenderBackend* renderer,
                                  CanvasView* view,
-                                 Layer* root_layer, Stroke* working_stroke,
+                                 StrokeList strokes, Stroke* working_stroke,
                                  i32 x, i32 y, i32 w, i32 h, ClipFlags flags = ClipFlags_JUST_CLIP);
 
 void gpu_reset_render_flags(RenderBackend* renderer, int flags);

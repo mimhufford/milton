@@ -1,22 +1,12 @@
 // Copyright (c) 2015 Sergio Gonzalez. All rights reserved.
 // License: https://github.com/serge-rgb/milton#license
 
-
 #pragma once
-
-#include "vector.h"
-#include "StrokeList.h"
-
-struct Layer
-{
-    StrokeList strokes;
-};
-
-#pragma pack (push, 1)
 
 // IMPORTANT: CanvasView needs to be a flat structure
 //            because the whole struct is saved to the mlt file.
 //            It should only grow down.
+#pragma pack (push, 1)
 struct CanvasView
 {
     u32 size;                   // Size of struct
@@ -24,9 +14,7 @@ struct CanvasView
     v2l pan_center;             // In canvas scale
     v3f background_color;
 };
-
 #pragma pack(pop)
-
 
 v2l     canvas_to_raster (CanvasView* view, v2l canvas_point);
 v2l     raster_to_canvas (CanvasView* view, v2l raster_point);

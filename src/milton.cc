@@ -620,7 +620,7 @@ milton_init(Milton* milton, i32 width, i32 height, f32 ui_scale, PATH_CHAR* file
     }
 
     milton->persist->last_save_time = {};
-    // Note: This will fill out uninitialized data like default layers.
+    // Note: This will fill out uninitialized data
     if (read_from_disk) { milton_load(milton); }
 
     milton_validate(milton);
@@ -802,7 +802,7 @@ milton_save_postlude(Milton* milton)
 {
     MiltonPersist* p = milton->persist;
     p->last_save_time = platform_get_walltime();
-    p->last_save_stroke_count = milton->canvas->root_layer->strokes.count;
+    p->last_save_stroke_count = milton->canvas->strokes.count;
 
     milton->flags &= ~MiltonStateFlags_LAST_SAVE_FAILED;
 }
@@ -893,10 +893,8 @@ void
 milton_new_layer(Milton* milton)
 {
     CanvasState* canvas = milton->canvas;
-    Layer* layer = arena_alloc_elem(&canvas->arena, Layer);
-    canvas->root_layer = layer;
-    layer->strokes.arena = &canvas->arena;
-    strokelist_init_bucket(&layer->strokes.root);
+    canvas->strokes.arena = &canvas->arena;
+    strokelist_init_bucket(&canvas->strokes.root);
 }
 
 b32
@@ -922,7 +920,7 @@ milton_validate(Milton* milton)
     // Make sure that the history reflects the strokes that exist
 
     i64 history_count = milton->canvas->history;
-    i64 stroke_count = milton->canvas->root_layer->strokes.count;
+    i64 stroke_count = milton->canvas->strokes.count;
 
     if ( history_count != stroke_count ) {
         milton_log("WARNING: Recreating history. File says History: %d(max %d) Actual strokes: %d\n",
@@ -930,9 +928,8 @@ milton_validate(Milton* milton)
                    stroke_count);
         milton->canvas->history = 0;
         i32 id = 0;
-        Layer *l = milton->canvas->root_layer;
-        for ( i64 si = 0; si < l->strokes.count; ++si ) {
-            Stroke* s = get(&l->strokes, si);
+        for ( i64 si = 0; si < milton->canvas->strokes.count; ++si ) {
+            Stroke* s = get(&milton->canvas->strokes, si);
             milton->canvas->history += 1;
         }
     }
@@ -1097,10 +1094,9 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         if ( (input->flags & MiltonInputFlags_UNDO) ) {
             if ( milton->canvas->history > 0 ) {
                 milton->canvas->history -= 1;
-                Layer* l = milton->canvas->root_layer;
-                if ( l->strokes.count > 0 ) {
-                    Stroke* stroke_ptr = peek(&l->strokes);
-                    Stroke stroke = pop(&l->strokes);
+                if ( milton->canvas->strokes.count > 0 ) {
+                    Stroke* stroke_ptr = peek(&milton->canvas->strokes);
+                    Stroke stroke = pop(&milton->canvas->strokes);
                     push(&milton->canvas->stroke_graveyard, stroke);
                     milton->canvas->redo_stack += 1;
                     milton->render_settings.do_full_redraw = true;
@@ -1110,10 +1106,9 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         else if ( (input->flags & MiltonInputFlags_REDO) ) {
             if ( milton->canvas->redo_stack > 0 ) {
                 milton->canvas->redo_stack -= 1;
-                Layer* l = milton->canvas->root_layer;
                 if ( count(&milton->canvas->stroke_graveyard) > 0 ) {
                     Stroke stroke = pop(&milton->canvas->stroke_graveyard);
-                    push(&l->strokes, stroke);
+                    push(&milton->canvas->strokes, stroke);
                     milton->canvas->history += 1;
                     milton->render_settings.do_full_redraw = true;
                 }
@@ -1265,7 +1260,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
                 mlt_assert(new_stroke.num_points > 0);
                 mlt_assert(new_stroke.num_points <= STROKE_MAX_POINTS);
-                push(&milton->canvas->root_layer->strokes, new_stroke);
+                push(&milton->canvas->strokes, new_stroke);
 
                 milton->canvas->history += 1;
 
@@ -1375,7 +1370,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         if (    !(milton->flags & MiltonStateFlags_RUNNING)
              && (milton->flags & MiltonStateFlags_LAST_SAVE_FAILED)
              && (milton->flags & MiltonStateFlags_MOVE_FILE_FAILED)
-             && milton->persist->last_save_stroke_count != milton->canvas->root_layer->strokes.count ) {
+             && milton->persist->last_save_stroke_count != milton->canvas->strokes.count ) {
             // TODO: Stop using MoveFileEx?
             //  Why does MoveFileEx fail? Ask someone who knows this stuff.
             // Wait a moment and try again. If this fails, prompt to save somewhere else.
@@ -1473,7 +1468,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
     PROFILE_GRAPH_BEGIN(clipping);
 
     gpu_clip_strokes_and_update(&milton->root_arena, milton->renderer, milton->view,
-                                milton->canvas->root_layer, &milton->working_stroke,
+                                milton->canvas->strokes, &milton->working_stroke,
                                 view_x, view_y, view_width, view_height, clip_flags);
     PROFILE_GRAPH_END(clipping);
 

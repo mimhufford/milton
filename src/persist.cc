@@ -190,7 +190,7 @@ milton_load(Milton* milton)
 
                         stroke.bounding_rect = bounding_box_for_stroke(&stroke);
 
-                        push(&milton->canvas->root_layer->strokes, stroke);
+                        push(&milton->canvas->strokes, stroke);
                     } else {
                         ok = false;
                         goto END;
@@ -215,13 +215,13 @@ milton_load(Milton* milton)
                     READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
                     READ(&stroke.layer_id, sizeof(i32), 1, fd);
                     stroke.bounding_rect = bounding_box_for_stroke(&stroke);
-                    push(&milton->canvas->root_layer->strokes, stroke);
+                    push(&milton->canvas->strokes, stroke);
                 }
             }
 
-            i64 stroke_count = count(&milton->canvas->root_layer->strokes);
+            i64 stroke_count = count(&milton->canvas->strokes);
             if (stroke_count > 0) {
-                milton->working_stroke.flags = milton->canvas->root_layer->strokes[ stroke_count - 1]->flags;
+                milton->working_stroke.flags = milton->canvas->strokes[ stroke_count - 1]->flags;
             }
         }
 
@@ -345,11 +345,10 @@ milton_save(Milton* milton)
                 //
                 bool could_write_layer_contents = true;
 
-                Layer* layer = milton->canvas->root_layer;
-                if ( layer->strokes.count > INT_MAX ) {
+                if ( milton->canvas->strokes.count > INT_MAX ) {
                     milton_die_gracefully("FATAL. Number of strokes in layer greater than can be stored in file format. ");
                 }
-                i32 num_strokes = (i32)layer->strokes.count;
+                i32 num_strokes = (i32)milton->canvas->strokes.count;
 
                 bool could_write_strokes = true;
 
@@ -357,7 +356,7 @@ milton_save(Milton* milton)
                     for ( i32 stroke_i = 0;
                             could_write_strokes && stroke_i < num_strokes;
                             ++stroke_i ) {
-                        Stroke* stroke = get(&layer->strokes, stroke_i);
+                        Stroke* stroke = get(&milton->canvas->strokes, stroke_i);
                         mlt_assert(stroke->num_points > 0);
                         if ( stroke->num_points > 0 && stroke->num_points <= STROKE_MAX_POINTS ) {
                             i32 size_of_brush = sizeof(Brush);
