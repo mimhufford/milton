@@ -39,8 +39,3 @@ Rect    raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i3
 Rect    canvas_to_raster_bounding_rect(CanvasView* view, Rect rect);
 
 void    reset_transform_at_origin(v2l* pan_center);
-
-// ---- Layer functions.
-namespace layer {
-    Stroke* layer_push_stroke (Layer* layer, Stroke stroke);
-}

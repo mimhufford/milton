@@ -134,14 +134,3 @@ canvas_rect_to_raster_rect(CanvasView* view, Rect canvas_rect)
     raster_rect.top_left = canvas_to_raster(view, canvas_rect.top_left);
     return raster_rect;
 }
-
-
-namespace layer
-{
-    Stroke*
-    layer_push_stroke(Layer* layer, Stroke stroke)
-    {
-        push(&layer->strokes, stroke);
-        return peek(&layer->strokes);
-    }
-}  // namespace layer

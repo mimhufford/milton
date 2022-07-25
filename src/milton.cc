@@ -1265,7 +1265,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
                 mlt_assert(new_stroke.num_points > 0);
                 mlt_assert(new_stroke.num_points <= STROKE_MAX_POINTS);
-                auto* stroke = layer::layer_push_stroke(milton->canvas->root_layer, new_stroke);
+                push(&milton->canvas->root_layer->strokes, new_stroke);
 
                 milton->canvas->history += 1;
 

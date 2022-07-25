@@ -156,7 +156,6 @@ milton_load(Milton* milton)
         }
 
         if (ok) { milton_new_layer(milton); }
-        Layer* layer = milton->canvas->root_layer;
 
         if ( ok ) {
             i32 num_strokes = 0;
@@ -191,7 +190,7 @@ milton_load(Milton* milton)
 
                         stroke.bounding_rect = bounding_box_for_stroke(&stroke);
 
-                        layer::layer_push_stroke(layer, stroke);
+                        push(&milton->canvas->root_layer->strokes, stroke);
                     } else {
                         ok = false;
                         goto END;
@@ -216,13 +215,13 @@ milton_load(Milton* milton)
                     READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
                     READ(&stroke.layer_id, sizeof(i32), 1, fd);
                     stroke.bounding_rect = bounding_box_for_stroke(&stroke);
-                    layer::layer_push_stroke(layer, stroke);
+                    push(&milton->canvas->root_layer->strokes, stroke);
                 }
             }
 
-            i64 stroke_count = count(&layer->strokes);
+            i64 stroke_count = count(&milton->canvas->root_layer->strokes);
             if (stroke_count > 0) {
-                milton->working_stroke.flags = layer->strokes[ stroke_count - 1]->flags;
+                milton->working_stroke.flags = milton->canvas->root_layer->strokes[ stroke_count - 1]->flags;
             }
         }
 
