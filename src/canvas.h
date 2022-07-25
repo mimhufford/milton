@@ -23,8 +23,6 @@ struct Layer
 
     i32     flags;  // LayerFlags
 
-    float alpha;
-
     Layer* prev;
     Layer* next;
 };

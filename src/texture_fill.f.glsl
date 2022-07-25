@@ -2,8 +2,6 @@
 // License: https://github.com/serge-rgb/milton#license
 
 
-uniform float u_alpha;
-
 #if HAS_TEXTURE_MULTISAMPLE
     uniform sampler2DMS u_canvas;
 #else
@@ -22,5 +20,4 @@ main()
     vec4 color = texture(u_canvas, coord);
 #endif
     out_color = color;
-    out_color *= u_alpha;
 }

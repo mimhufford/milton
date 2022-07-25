@@ -195,26 +195,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
                 }
             }
         }
-        static b32 show_effects = false;
-        {
-            // ImGui::GetWindow(Pos|Size) works in here because we are inside Begin()/End() calls.
-            {
-                ImGui::Text(loc(TXT_opacity));
-                f32 alpha = canvas->working_layer->alpha;
-                if ( ImGui::SliderFloat("##opacity", &alpha, 0.0f, 1.0f) ) {
-                    // Used the slider. Ask if it's OK to convert the binary format.
-                    if ( milton->persist->mlt_binary_version < 3 ) {
-                        milton_log("Modified milton file from %d to 3\n", milton->persist->mlt_binary_version);
-                        milton->persist->mlt_binary_version = 3;
-                    }
-                    input->flags |= (i32)MiltonInputFlags_FULL_REFRESH;
-
-                    alpha = clamp(alpha, 0.0f, 1.0f);
-
-                    canvas->working_layer->alpha = alpha;
-                }
-            }
-        }
         ImGui::EndChild();
         ImGui::EndGroup();
 

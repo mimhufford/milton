@@ -922,7 +922,6 @@ milton_new_layer_with_id(Milton* milton, i32 new_id)
         layer->id = new_id;
         layer->flags = LayerFlags_VISIBLE;
         layer->strokes.arena = &canvas->arena;
-        layer->alpha = 1.0f;
         strokelist_init_bucket(&layer->strokes.root);
     }
     snprintf(layer->name, MAX_LAYER_NAME_LEN, "Layer %d", layer->id);

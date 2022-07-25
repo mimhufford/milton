@@ -301,21 +301,6 @@ milton_load(Milton* milton)
         READ(milton->canvas->history.data, sizeof(*milton->canvas->history.data), (size_t)history_count, fd);
         milton->canvas->history.count = history_count;
 
-        // MLT 3
-        // Layer alpha
-        if ( milton_binary_version >= 3 ) {
-            Layer* l = milton->canvas->root_layer;
-            for ( i64 i = 0; ok && i < num_layers; ++i ) {
-                mlt_assert(l != NULL);
-                READ(&l->alpha, sizeof(l->alpha), 1, fd);
-                l = l->next;
-            }
-        } else {
-            for ( Layer* l = milton->canvas->root_layer; l != NULL; l = l->next ) {
-                l->alpha = 1.0f;
-            }
-        }
-
         err = fclose(fd);
         if ( err != 0 ) {
             ok = false;
@@ -524,29 +509,9 @@ milton_save(Milton* milton)
                                  write_data(milton->canvas->history.data, sizeof(*milton->canvas->history.data), (size_t)history_count, fd) ) {
 
                                 //
-                                // Layer alpha
-                                //
-                                b32 could_write_layer_alpha = true;
-
-                                if ( milton_binary_version >= 3 ) {
-                                    Layer* l = milton->canvas->root_layer;
-                                    for ( i64 i = 0;
-                                          could_write_layer_alpha && i < num_layers;
-                                          ++i ) {
-                                        mlt_assert(l);
-                                        if ( !write_data(&l->alpha, sizeof(l->alpha), 1, fd) ) {
-                                            could_write_layer_alpha = false;
-                                        }
-                                        l = l->next;
-                                    }
-                                }
-
-                                //
                                 // Done.
                                 //
-                                if ( could_write_layer_alpha ) {
-                                    could_write_milton_state = true;
-                                }
+                                could_write_milton_state = true;
                             }
                         }
                     }

@@ -47,16 +47,11 @@ struct RenderElement
 
     i64     count;
 
-    union {
-        struct {  // For when element is a stroke.
-            v4f     color;
-            i32     radius;
-            f32     min_opacity;
-            f32     hardness;
-        };
-        struct {  // For when element is layer.
-            f32          layer_alpha;
-        };
+    struct {  // For when element is a stroke.
+        v4f     color;
+        i32     radius;
+        f32     min_opacity;
+        f32     hardness;
     };
 
     int     flags;  // RenderElementFlags enum;
@@ -1330,17 +1325,15 @@ gpu_clip_strokes_and_update(Arena* arena,
             }
 
             auto* p = push(clip_array, layer_element);
-            p->layer_alpha = l->alpha;
         }
     }
 }
 
 static void
-gpu_fill_with_texture(RenderBackend* r, float alpha = 1.0f)
+gpu_fill_with_texture(RenderBackend* r)
 {
     // Assumes that texture object is already bound.
     gl::use_program(r->texture_fill_program);
-    gl::set_uniform_f(r->texture_fill_program, "u_alpha", alpha);
     {
         GLint t_loc = glGetAttribLocation(r->texture_fill_program, "a_position");
         if ( t_loc >= 0 ) {
@@ -1435,7 +1428,7 @@ gpu_render_canvas(RenderBackend* r, i32 view_x, i32 view_y,
 
                 glDisable(GL_DEPTH_TEST);
 
-                gpu_fill_with_texture(r, re->layer_alpha);
+                gpu_fill_with_texture(r);
 
                 glEnable(GL_DEPTH_TEST);
             }
