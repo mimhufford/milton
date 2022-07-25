@@ -170,7 +170,6 @@ milton_load(Milton* milton)
             if (ok) { milton_new_layer(milton); }
             Layer* layer = milton->canvas->working_layer;
             READ(&layer->id, sizeof(i32), 1, fd);
-            READ(&layer->_flags, sizeof(layer->_flags), 1, fd);
 
             if ( ok ) {
                 i32 num_strokes = 0;
@@ -398,7 +397,6 @@ milton_save(Milton* milton)
                     bool could_write_strokes = true;
 
                     if ( write_data(&layer->id, sizeof(i32), 1, fd) &&
-                         write_data(&layer->_flags, sizeof(layer->_flags), 1, fd) &&
                          write_data(&num_strokes, sizeof(i32), 1, fd) ) {
                         for ( i32 stroke_i = 0;
                               could_write_strokes && stroke_i < num_strokes;

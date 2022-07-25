@@ -13,8 +13,6 @@ struct Layer
 
     StrokeList strokes;
 
-    i32 _flags;
-
     Layer* prev;
     Layer* next;
 };
@@ -28,12 +26,9 @@ struct CanvasView
 {
     u32 size;                   // Size of struct
     v2i screen_size;            // Size in pixels
-    i64 _scale;                 // Zoom
-    v2i _zoom_center;            // In pixels
     v2l pan_center;             // In canvas scale
     v3f background_color;
     i32 working_layer_id;
-    f32 _angle;                 // Rotation
 };
 
 #pragma pack(pop)
