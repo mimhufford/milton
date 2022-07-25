@@ -9,11 +9,6 @@
 
 #define MAX_LAYER_NAME_LEN          64
 
-enum LayerFlags
-{
-    LayerFlags_VISIBLE = (1<<0),
-};
-
 struct Layer
 {
     i32 id;
@@ -21,7 +16,7 @@ struct Layer
     StrokeList strokes;
     char    name[MAX_LAYER_NAME_LEN];
 
-    i32     flags;  // LayerFlags
+    i32 _flags;
 
     Layer* prev;
     Layer* next;
@@ -60,12 +55,9 @@ Rect    canvas_to_raster_bounding_rect(CanvasView* view, Rect rect);
 void    reset_transform_at_origin(v2l* pan_center);
 
 // ---- Layer functions.
-
-
 namespace layer {
     Layer*  get_topmost (Layer* root);
     Layer*  get_by_id (Layer* root_layer, i32 id);
-    void    layer_toggle_visibility (Layer* layer);
     Stroke* layer_push_stroke (Layer* layer, Stroke stroke);
     i32     number_of_layers (Layer* root);
     void    free_layers (Layer* root);

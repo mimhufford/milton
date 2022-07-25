@@ -179,17 +179,6 @@ namespace layer
         return peek(&layer->strokes);
     }
 
-    void
-    layer_toggle_visibility(Layer* layer)
-    {
-        b32 visible = layer->flags & LayerFlags_VISIBLE;
-        if ( visible ) {
-            layer->flags &= ~LayerFlags_VISIBLE;
-        } else {
-            layer->flags |= LayerFlags_VISIBLE;
-        }
-    }
-
     i32
     number_of_layers(Layer* layer)
     {

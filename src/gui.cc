@@ -61,18 +61,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
         Layer* layer = milton->canvas->root_layer;
         while ( layer->next ) { layer = layer->next; }  // Move to the top layer.
         while ( layer ) {
-
-            bool v = layer->flags & LayerFlags_VISIBLE;
-            ImGui::PushID(layer->id);
-
-            if ( ImGui::Checkbox("##select", &v) ) {
-                layer::layer_toggle_visibility(layer);
-                input->flags |= (i32)MiltonInputFlags_FULL_REFRESH;
-            }
-
-            ImGui::PopID();
-            ImGui::SameLine();
-
             // Draw the layers list. If in renaming mode, draw the layer that's being renamed as an InputText.
             // Else just draw them as a list of Selectables.
             if ( !ImGui::IsWindowFocused() ) {

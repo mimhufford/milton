@@ -920,7 +920,6 @@ milton_new_layer_with_id(Milton* milton, i32 new_id)
     Layer* layer = arena_alloc_elem(&canvas->arena, Layer);
     {
         layer->id = new_id;
-        layer->flags = LayerFlags_VISIBLE;
         layer->strokes.arena = &canvas->arena;
         strokelist_init_bucket(&layer->strokes.root);
     }
@@ -1280,8 +1279,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
             milton_update_brushes(milton);
             gpu_update_picker(milton->renderer, &milton->gui->picker);
         }
-        else if ( !milton->gui->owns_user_input
-                  && (milton->canvas->working_layer->flags & LayerFlags_VISIBLE) ) {
+        else if ( !milton->gui->owns_user_input) {
             if ( milton->current_mode == MiltonMode::PRIMITIVE_LINE ) {
                 milton_primitive_line_input(milton, input, end_stroke);
             }

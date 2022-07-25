@@ -183,7 +183,7 @@ milton_load(Milton* milton)
             READ(layer->name, sizeof(char), (size_t)len, fd);
 
             READ(&layer->id, sizeof(i32), 1, fd);
-            READ(&layer->flags, sizeof(layer->flags), 1, fd);
+            READ(&layer->_flags, sizeof(layer->_flags), 1, fd);
 
             if ( ok ) {
                 i32 num_strokes = 0;
@@ -415,7 +415,7 @@ milton_save(Milton* milton)
                     if ( write_data(&len, sizeof(i32), 1, fd) &&
                          write_data(name, sizeof(char), (size_t)len, fd) &&
                          write_data(&layer->id, sizeof(i32), 1, fd) &&
-                         write_data(&layer->flags, sizeof(layer->flags), 1, fd) &&
+                         write_data(&layer->_flags, sizeof(layer->_flags), 1, fd) &&
                          write_data(&num_strokes, sizeof(i32), 1, fd) ) {
                         for ( i32 stroke_i = 0;
                               could_write_strokes && stroke_i < num_strokes;

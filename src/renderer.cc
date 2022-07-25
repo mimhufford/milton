@@ -1233,14 +1233,7 @@ gpu_clip_strokes_and_update(Arena* arena,
             r->clipped_count = 0;
         }
         #endif
-        for ( Layer* l = root_layer;
-              l != NULL;
-              l = l->next ) {
-            if ( !(l->flags & LayerFlags_VISIBLE) ) {
-                // Skip invisible layers.
-                continue;
-            }
-
+        for ( Layer* l = root_layer; l != NULL; l = l->next ) {
             StrokeBucket* bucket = &l->strokes.root;
             i64 bucket_i = 0;
 
