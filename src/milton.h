@@ -75,14 +75,13 @@ struct CanvasState
 {
     Arena  arena;
 
-    i32         layer_guid;  // to create unique ids;
-    Layer*      root_layer;
+    Layer*  root_layer;
 
     i32 history;
     i32 redo_stack;
-    DArray<Stroke>         stroke_graveyard;
+    DArray<Stroke> stroke_graveyard;
 
-    i32         stroke_id_count;
+    i32 stroke_id_count;
 };
 
 enum PrimitiveFSM

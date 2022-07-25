@@ -79,7 +79,6 @@ milton_load(Milton* milton)
     // Declare variables here to silence compiler warnings about using GOTO.
     int err = 0;
 
-    i32 layer_guid = 0;
     ColorButton* btn = NULL;
     MiltonGui* gui = NULL;
     auto saved_size = milton->view->screen_size;
@@ -155,8 +154,6 @@ milton_load(Milton* milton)
             ok = false;
             goto END;
         }
-
-        READ(&layer_guid, sizeof(i32), 1, fd);
 
         if (ok) { milton_new_layer(milton); }
         Layer* layer = milton->canvas->root_layer;
@@ -280,7 +277,6 @@ END:
             }
             milton_reset_canvas_and_set_default(milton);
         } else {
-            milton->canvas->layer_guid = layer_guid;
             // Update GPU
             milton->flags |= MiltonStateFlags_JUST_SAVED;
         }
@@ -343,8 +339,7 @@ milton_save(Milton* milton)
             mlt_assert(sizeof(CanvasView) == milton->view->size);
 
             if ( write_data(&milton_binary_version, sizeof(u32), 1, fd) &&
-                 write_data(milton->view, sizeof(CanvasView), 1, fd) &&
-                 write_data(&milton->canvas->layer_guid, sizeof(i32), 1, fd) ) {
+                 write_data(milton->view, sizeof(CanvasView), 1, fd) ) {
 
                 //
                 // Layer contents
