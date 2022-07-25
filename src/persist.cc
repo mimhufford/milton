@@ -153,7 +153,7 @@ milton_load(Milton* milton)
         milton->view->screen_size = saved_size;
 
         // The process of loading changes state. working_layer_id changes when creating layers.
-        saved_working_layer_id = milton->view->working_layer_id;
+        saved_working_layer_id = milton->canvas->root_layer->id;
 
         if ( milton_magic != MILTON_MAGIC_NUMBER ) {
             platform_dialog("MLT file could not be loaded. Magic number mismatch.", "Problem");
@@ -168,7 +168,7 @@ milton_load(Milton* milton)
 
         for ( int layer_i = 0; ok && layer_i < num_layers; ++layer_i ) {
             if (ok) { milton_new_layer(milton); }
-            Layer* layer = milton->canvas->working_layer;
+            Layer* layer = milton->canvas->root_layer;
             READ(&layer->id, sizeof(i32), 1, fd);
 
             if ( ok ) {
@@ -242,7 +242,6 @@ milton_load(Milton* milton)
                 }
             }
         }
-        milton->view->working_layer_id = saved_working_layer_id;
 
         if ( milton_binary_version >= 5 ) {
             v3f rgb;
@@ -300,19 +299,7 @@ END:
             }
             milton_reset_canvas_and_set_default(milton);
         } else {
-            i32 id = milton->view->working_layer_id;
-            {  // Use working_layer_id to make working_layer point to the correct thing
-                Layer* layer = milton->canvas->root_layer;
-                while ( layer ) {
-                    if ( layer->id == id ) {
-                        milton->canvas->working_layer = layer;
-                        break;
-                    }
-                    layer = layer->next;
-                }
-            }
             milton->canvas->layer_guid = layer_guid;
-
             // Update GPU
             milton->flags |= MiltonStateFlags_JUST_SAVED;
         }

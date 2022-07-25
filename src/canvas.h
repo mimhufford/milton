@@ -28,7 +28,6 @@ struct CanvasView
     v2i screen_size;            // Size in pixels
     v2l pan_center;             // In canvas scale
     v3f background_color;
-    i32 working_layer_id;
 };
 
 #pragma pack(pop)

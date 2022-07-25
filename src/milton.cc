@@ -232,7 +232,7 @@ milton_primitive_line_input(Milton* milton, MiltonInput const* input, b32 end_st
             ws->pressures[0] = ws->pressures[1] = 1.0f;
             milton->working_stroke.num_points = 2;
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->view->working_layer_id;
+            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             milton->working_stroke.points[1] = point;
@@ -258,7 +258,7 @@ milton_primitive_rectangle_input(Milton* milton, MiltonInput const* input, b32 e
             }
             ws->num_points = 5;
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->view->working_layer_id;
+            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             v2l p0 = canvas_to_raster(milton->view, ws->points[0]);
@@ -292,7 +292,7 @@ milton_primitive_grid_input(Milton* milton, MiltonInput const* input, b32 end_st
                 ws->pressures[i] = 1.0f;
             }
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->view->working_layer_id;
+            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             v2l p0 = canvas_to_raster(milton->view, ws->points[0]);
@@ -390,9 +390,8 @@ milton_stroke_input(Milton* milton, MiltonInput const* input)
         clear_smooth_filter(milton->smooth_filter, input->points[0]);
     }
 
-    //milton_log("Stroke input with %d packets\n", input->input_count);
     ws->brush    = milton_get_brush(milton);
-    ws->layer_id = milton->view->working_layer_id;
+    ws->layer_id = milton->canvas->root_layer->id;
 
     for ( int input_i = 0; input_i < input->input_count; ++input_i ) {
 
@@ -715,6 +714,9 @@ milton_reset_canvas(Milton* milton)
     arena_free(&canvas->arena);  // Note: This destroys the canvas
     milton->canvas = arena_bootstrap(CanvasState, arena, size);
 
+    // New Root
+    milton_new_layer(milton);
+
     mlt_assert(milton->canvas->history.count == 0);
 }
 
@@ -722,9 +724,6 @@ void
 milton_reset_canvas_and_set_default(Milton* milton)
 {
     milton_reset_canvas(milton);
-
-    // New Root
-    milton_new_layer(milton);
 
     // New View
     init_view(milton->view,
@@ -910,53 +909,13 @@ milton_new_layer(Milton* milton)
     CanvasState* canvas = milton->canvas;
     i32 id = canvas->layer_guid++;
     milton_log("Increased guid to %d\n", canvas->layer_guid);
-    milton_new_layer_with_id(milton, id);
-}
 
-void
-milton_new_layer_with_id(Milton* milton, i32 new_id)
-{
-    CanvasState* canvas = milton->canvas;
     Layer* layer = arena_alloc_elem(&canvas->arena, Layer);
+    canvas->root_layer = layer;
     {
-        layer->id = new_id;
+        layer->id = id;
         layer->strokes.arena = &canvas->arena;
         strokelist_init_bucket(&layer->strokes.root);
-    }
-
-    if ( canvas->root_layer != NULL ) {
-        Layer* top = layer::get_topmost(canvas->root_layer);
-        top->next = layer;
-        layer->prev = top;
-        milton_set_working_layer(milton, top->next);
-    } else {
-        canvas->root_layer = layer;
-        milton_set_working_layer(milton, layer);
-    }
-}
-
-void
-milton_set_working_layer(Milton* milton, Layer* layer)
-{
-    milton->canvas->working_layer = layer;
-    milton->view->working_layer_id = layer->id;
-}
-
-void
-milton_delete_working_layer(Milton* milton)
-{
-    Layer* layer = milton->canvas->working_layer;
-    if ( layer->next || layer->prev ) {
-        if (layer->next) layer->next->prev = layer->prev;
-        if (layer->prev) layer->prev->next = layer->next;
-
-        Layer* wl = NULL;
-        if (layer->next) wl = layer->next;
-        else wl = layer->prev;
-        milton_set_working_layer(milton, wl);
-    }
-    if ( layer == milton->canvas->root_layer ) {
-        milton->canvas->root_layer = milton->canvas->working_layer;
     }
 }
 
@@ -1359,7 +1318,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 CanvasState* canvas = milton->canvas;
                 copy_stroke(&canvas->arena, milton->view, &milton->working_stroke, &new_stroke);
                 {
-                    new_stroke.layer_id = milton->view->working_layer_id;
+                    new_stroke.layer_id = milton->canvas->root_layer->id;
                     new_stroke.bounding_rect = bounding_box_for_stroke(&new_stroke);
 
                     new_stroke.id = milton->canvas->stroke_id_count++;
@@ -1371,11 +1330,11 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
                 mlt_assert(new_stroke.num_points > 0);
                 mlt_assert(new_stroke.num_points <= STROKE_MAX_POINTS);
-                auto* stroke = layer::layer_push_stroke(milton->canvas->working_layer, new_stroke);
+                auto* stroke = layer::layer_push_stroke(milton->canvas->root_layer, new_stroke);
 
                 // Invalidate working stroke render element
 
-                HistoryElement h = { HistoryElement_STROKE_ADD, milton->canvas->working_layer->id };
+                HistoryElement h = { HistoryElement_STROKE_ADD, milton->canvas->root_layer->id };
                 push(&milton->canvas->history, h);
 
                 reset_working_stroke(milton);

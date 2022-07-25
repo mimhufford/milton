@@ -89,11 +89,9 @@ struct CanvasState
 
     i32         layer_guid;  // to create unique ids;
     Layer*      root_layer;
-    Layer*      working_layer;
 
     DArray<HistoryElement> history;
     DArray<HistoryElement> redo_stack;
-    //Layer**         layer_graveyard;
     DArray<Stroke>         stroke_graveyard;
 
     i32         stroke_id_count;
@@ -325,9 +323,6 @@ void milton_update_and_render(Milton* milton, MiltonInput const* input);
 void milton_try_quit(Milton* milton);
 
 void milton_new_layer(Milton* milton);
-void milton_new_layer_with_id(Milton* milton, i32 new_id);
-void milton_set_working_layer(Milton* milton, Layer* layer);
-void milton_delete_working_layer(Milton* milton);
 void milton_set_background_color(Milton* milton, v3f background_color);
 
 b32  milton_brush_smoothing_enabled(Milton* milton);
