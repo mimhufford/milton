@@ -32,25 +32,11 @@
 
 #define MILTON_HARDWARE_BRUSH_CURSOR 1
 
-
-// Zoom control
-#define MINIMUM_SCALE        (1 << 4)
-
-#define SCALE_FACTOR 1.3f
-    #if MILTON_ZOOM_DEBUG
-        #undef SCALE_FACTOR
-        #define SCALE_FACTOR 1.5f
-    #endif
-
 #define VIEW_SCALE_LIMIT (1 << 16)
     #if MILTON_ZOOM_DEBUG
         #undef VIEW_SCALE_LIMIT
         #define VIEW_SCALE_LIMIT (1 << 20)
     #endif
-
-#define DEFAULT_PEEK_OUT_INCREMENT_LOG 2.0
-
-#define PEEK_OUT_SPEED 20  // ms / increment
 
 // No support for system cursor on linux or macos for now
 #if defined(__linux__) || defined(__MACH__)

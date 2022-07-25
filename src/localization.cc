@@ -79,8 +79,6 @@ init_localization()
         EN(TXT_tools, "Tools");
         EN(TXT_brush, "Brush");
         EN(TXT_eraser, "Eraser");
-        EN(TXT_zoom_in, "Zoom In");
-        EN(TXT_zoom_out, "Zoom Out");
         EN(TXT_brush_options, "Brush Options");
         EN(TXT_set_opacity_to, "Set brush opacity to");
         EN(TXT_save_milton_canvas_as_DOTS, "Save Milton Canvas As...");
@@ -100,12 +98,10 @@ init_localization()
         EN(TXT_background_COLON, "Background:");
         EN(TXT_OPENBRACKET_default_canvas_CLOSE_BRACKET, "[Default canvas]");
         EN(TXT_could_not_delete_default_canvas, "Could not delete default canvas. Contents will be still there when you create a new canvas.");
-        EN(TXT_peek_out_increment_percent, "Peek-out increment percentage");
         EN(TXT_opacity_pressure, "Use pressure for opacity");
         EN(TXT_soft_brush, "Soft brush");
         EN(TXT_minimum, "Minimum");
         EN(TXT_hardness, "Hardness");
-        EN(TXT_peek_out, "Peek-Out");
         EN(TXT_rotation, "Rotation");
         EN(TXT_blur, "Blur");
         EN(TXT_level, "Level");
@@ -117,11 +113,8 @@ init_localization()
         EN(TXT_size_relative_to_canvas, "Size relative to canvas");
         EN(TXT_grid_columns, "Grid Columns");
         EN(TXT_grid_rows, "Grid Rows");
-
         EN(TXT_Action_DECREASE_BRUSH_SIZE, "Decrease brush size");
         EN(TXT_Action_INCREASE_BRUSH_SIZE, "Increase brush size");
-        EN(TXT_Action_ZOOM_IN, "Zoom in");
-        EN(TXT_Action_ZOOM_OUT, "Zoom out");
         EN(TXT_Action_REDO, "Redo");
         EN(TXT_Action_UNDO, "Undo");
         EN(TXT_Action_EXPORT, "Export");
@@ -159,7 +152,6 @@ init_localization()
         EN(TXT_Action_SET_BRUSH_ALPHA_90, "Set alpha to 90%");
         EN(TXT_Action_SET_BRUSH_ALPHA_100, "Set alpha to 100%");
         EN(TXT_Action_HELP, "Help");
-        EN(TXT_Action_PEEK_OUT, "Peek out");
         EN(TXT_Action_DRAG_BRUSH_SIZE, "Drag to change brush size");
         EN(TXT_Action_TRANSFORM, "Rotate");
     #if MILTON_ENABLE_PROFILING
@@ -213,8 +205,6 @@ init_localization()
         g_command_abbreviations [TXT_eraser]                = "E";
         g_command_abbreviations [TXT_undo]                  = C("Z");
         g_command_abbreviations [TXT_redo]                  = C("Shift+Z");
-        g_command_abbreviations [TXT_zoom_in]               = C(" +");
-        g_command_abbreviations [TXT_zoom_out]              = C(" -");
         g_command_abbreviations [TXT_move_canvas]           = "SPACE";
         g_command_abbreviations [TXT_stop_moving_canvas]    = "SPACE";
         g_command_abbreviations [TXT_decrease_brush_size]   = " [ ";
@@ -225,7 +215,6 @@ init_localization()
         g_command_abbreviations [TXT_switch_to_primitive_rectangle] = "R";
         g_command_abbreviations [TXT_switch_to_primitive_grid]   = "G";
         g_command_abbreviations [TXT_switch_to_eraser]      = "E";
-        g_command_abbreviations [TXT_peek_out]              = "`";
     }
 #undef C
 #undef EN

@@ -46,7 +46,6 @@ enum class MiltonMode
     EXPORTING,
     EYEDROPPER,
     HISTORY,
-    PEEK_OUT,
     DRAG_BRUSH_SIZE,
     TRANSFORM,  // Scale and rotate
 
@@ -111,8 +110,6 @@ enum PrimitiveFSM
 struct MiltonSettings
 {
     v3f background_color;
-    float peek_out_increment;
-
     MiltonBindings bindings;
 };
 #pragma pack(pop)
@@ -127,25 +124,6 @@ struct SmoothFilter
     b32 first;
     v2f prediction;
     v2l center;
-};
-
-enum PeekOutFlags
-{
-    PeekOut_CLICK_TO_EXIT = (1<<0),
-};
-
-struct PeekOut
-{
-    WallTime begin_anim_time;
-    b32 peek_out_ended;
-
-    i64 high_scale;
-    i64 low_scale;
-
-    v2l begin_pan;
-    v2l end_pan;
-
-    int flags /*PeekOutFlags*/;
 };
 
 struct RenderSettings
@@ -231,7 +209,6 @@ struct Milton
     MiltonSettings* settings;  // User settings
     MiltonPersist* persist;
     MiltonDragBrush* drag_brush;
-    PeekOut* peek_out;
     TransformMode* transform;
 
     // Primitives
@@ -355,16 +332,8 @@ void milton_set_working_layer(Milton* milton, Layer* layer);
 void milton_delete_working_layer(Milton* milton);
 void milton_set_background_color(Milton* milton, v3f background_color);
 
-// Set the center of the zoom
-void milton_set_zoom_at_point(Milton* milton, v2i zoom_center);
-void milton_set_zoom_at_screen_center(Milton* milton);
-
 b32  milton_brush_smoothing_enabled(Milton* milton);
 void milton_toggle_brush_smoothing(Milton* milton);
-
-
-void peek_out_trigger_start(Milton* milton, int flags/* PeekOutFlags*/ = 0);
-void peek_out_trigger_stop(Milton* milton);
 
 void transform_start(Milton* milton, v2i pointer);
 void transform_stop(Milton* milton);

@@ -537,14 +537,6 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                     }
                     ImGui::EndMenu();
                 }
-                if ( ImGui::MenuItem(loc(TXT_zoom_in)) ) {
-                    input->scale++;
-                    milton_set_zoom_at_screen_center(milton);
-                }
-                if ( ImGui::MenuItem(loc(TXT_zoom_out)) ) {
-                    input->scale--;
-                    milton_set_zoom_at_screen_center(milton);
-                }
                 ImGui::EndMenu();
             }
             if ( ImGui::BeginMenu(loc(TXT_tools)) ) {
@@ -601,10 +593,6 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
             if ( ImGui::BeginMenu(loc(TXT_view)) ) {
                 if ( ImGui::MenuItem(loc(TXT_toggle_gui_visibility)) ) {
                     milton_toggle_gui_visibility(milton);
-                }
-
-                if ( ImGui::MenuItem(loc(TXT_peek_out)) ) {
-                    peek_out_trigger_start(milton, PeekOut_CLICK_TO_EXIT);
                 }
 
                 if ( ImGui::MenuItem(loc(TXT_reset_view_at_origin)) ) {
@@ -789,12 +777,6 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
 
                 if ( ImGui::Button(loc(TXT_set_current_background_color_as_default)) ) {
                     milton->settings->background_color = milton->view->background_color;
-                }
-
-                const float peek_range = 20;
-                int peek_out_percent = 100 * (milton->settings->peek_out_increment / peek_range);
-                if (ImGui::SliderInt(loc(TXT_peek_out_increment_percent), &peek_out_percent, 0, 100)) {
-                    milton->settings->peek_out_increment = (peek_out_percent / 100.0f) * peek_range;
                 }
 
                 ImGui::Separator();

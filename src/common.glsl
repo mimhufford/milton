@@ -9,7 +9,6 @@ uniform vec4 u_brush_color;
 uniform mat2 u_rotation;
 uniform mat2 u_rotation_inverse;
 uniform ivec2 u_pan_center;
-uniform ivec2 u_zoom_center;
 uniform vec2  u_screen_size;
 uniform int   u_radius;
 
@@ -18,7 +17,7 @@ canvas_to_raster_gl(vec2 cp)
 {
     vec2 xy = (cp - u_pan_center);
 
-    vec2 rp = ( (u_rotation_inverse * xy) + u_zoom_center ) / u_screen_size;
+    vec2 rp = (u_rotation_inverse * xy) / u_screen_size;
 
     // rp in [0, 1]x[0, 1]
 
@@ -34,7 +33,7 @@ canvas_to_raster_gl(vec2 cp)
 vec2
 raster_to_canvas_gl(vec2 raster_point)
 {
-    vec2 canvas_point = (u_rotation * (raster_point - u_zoom_center)) + vec2(u_pan_center);
+    vec2 canvas_point = (u_rotation * raster_point) + vec2(u_pan_center);
 
     return canvas_point;
 }

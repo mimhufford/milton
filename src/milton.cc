@@ -36,7 +36,6 @@ init_view(CanvasView* view, v3f background_color, i32 width, i32 height)
     view->size = sizeof(CanvasView);
     view->background_color  = background_color;
     view->screen_size       = size;
-    view->zoom_center       = size / 2;
     view->screen_size       = { width, height };
 }
 
@@ -378,59 +377,11 @@ clear_smooth_filter(SmoothFilter* filter, v2l center)
     filter->center = center;
 }
 
-static u64 peek_out_duration_ms(Milton* milton);  // forward decl
-
-static float
-peek_out_interpolation(Milton* milton)
-{
-    float interp = 0.0f;
-
-    WallTime time = platform_get_walltime();
-    u64 ms = difference_in_ms(milton->peek_out->begin_anim_time, time);
-
-    if (ms < peek_out_duration_ms(milton)) {
-        interp = ms / (float)peek_out_duration_ms(milton);
-    }
-    else {
-        interp = 1.0f;
-    }
-
-    if (milton->peek_out->peek_out_ended) {
-        interp = 1 - interp;
-    }
-    return interp;
-}
-
-i64
-milton_render_scale_with_interpolation(Milton* milton, float interp)
-{
-    if ( milton->current_mode == MiltonMode::PEEK_OUT ) {
-        return lerp(milton->peek_out->low_scale, milton->peek_out->high_scale, interp);
-    }
-    else {
-        return 1;
-    }
-}
-
-i64
-milton_render_scale(Milton* milton)
-{
-    float interp = 1.0f;
-    if (milton->current_mode == MiltonMode::PEEK_OUT) {
-        interp = peek_out_interpolation(milton);
-    }
-    return milton_render_scale_with_interpolation(milton, interp);
-}
-
 static void
 milton_stroke_input(Milton* milton, MiltonInput const* input)
 {
     if ( input->input_count == 0 ) {
         return;
-    }
-
-    if ( milton_render_scale(milton) != 1 ) {
-        return;  // We can't draw while peeking.
     }
 
     Stroke* ws = &milton->working_stroke;
@@ -463,20 +414,6 @@ milton_stroke_input(Milton* milton, MiltonInput const* input)
 
         stroke_append_point(ws, canvas_point, pressure);
     }
-}
-
-void
-milton_set_zoom_at_point(Milton* milton, v2i new_zoom_center)
-{
-    milton->view->pan_center = raster_to_canvas(milton->view, v2i_to_v2l(new_zoom_center));
-    milton->view->zoom_center = new_zoom_center;
-    gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
-}
-
-void
-milton_set_zoom_at_screen_center(Milton* milton)
-{
-    milton_set_zoom_at_point(milton, milton->view->screen_size / 2);
 }
 
 void
@@ -608,7 +545,6 @@ void
 settings_init(MiltonSettings* s)
 {
     s->background_color = v3f{0.2f, 0.2f, 0.2f};
-    s->peek_out_increment = DEFAULT_PEEK_OUT_INCREMENT_LOG;
 }
 
 int milton_save_thread(void* state_);  // forward
@@ -657,8 +593,6 @@ milton_init(Milton* milton, i32 width, i32 height, f32 ui_scale, PATH_CHAR* file
 
     gui_init(&milton->root_arena, milton->gui, ui_scale);
     settings_init(milton->settings);
-
-    milton->peek_out = arena_alloc_elem(&milton->root_arena, PeekOut);
 
     b32 loaded_settings = false;
     if (read_from_disk) {
@@ -1137,102 +1071,6 @@ copy_stroke(Arena* arena, CanvasView* view, Stroke* in_stroke, Stroke* out_strok
     out_stroke->render_handle = 0;
 }
 
-static i64
-peek_out_target_scale(Milton* milton)
-{
-    double log_scale = 1 / log2(SCALE_FACTOR);
-    i64 target = min(pow(SCALE_FACTOR, log_scale + milton->settings->peek_out_increment), VIEW_SCALE_LIMIT);
-    return target;
-}
-
-static u64
-peek_out_duration_ms(Milton* milton)
-{
-    u64 duration = milton->settings->peek_out_increment * PEEK_OUT_SPEED;
-    return duration;
-}
-
-void
-peek_out_trigger_start(Milton* milton, int peek_out_flags)
-{
-    milton_set_zoom_at_screen_center(milton);
-    milton->peek_out->begin_pan = milton->view->pan_center;
-
-    milton->peek_out->low_scale = milton_render_scale(milton);
-    milton->peek_out->high_scale = peek_out_target_scale(milton);
-    milton->peek_out->peek_out_ended = false;
-    milton->peek_out->begin_anim_time = platform_get_walltime();
-    milton->peek_out->flags = peek_out_flags;
-
-    if (milton->current_mode != MiltonMode::PEEK_OUT) {
-        milton_enter_mode(milton, MiltonMode::PEEK_OUT);
-    }
-}
-
-void
-peek_out_trigger_stop(Milton* milton)
-{
-    if (milton->current_mode == MiltonMode::PEEK_OUT && !milton->peek_out->peek_out_ended) {
-        milton_set_zoom_at_point(milton, milton->platform->pointer);
-
-        i64 scale = milton_render_scale(milton);
-        milton->peek_out->high_scale = scale;
-        milton->peek_out->low_scale = 1;
-        milton->peek_out->begin_anim_time = platform_get_walltime();
-        milton->peek_out->peek_out_ended = true;
-        milton->peek_out->end_pan = raster_to_canvas(milton->view, v2i_to_v2l(milton->platform->pointer));
-    }
-}
-
-static void
-peek_out_tick(Milton* milton, MiltonInput const* input)
-{
-    PeekOut* peek = milton->peek_out;
-
-    if (milton->current_mode == MiltonMode::PEEK_OUT) {
-
-        float interp = peek_out_interpolation(milton);
-
-        if ((peek->flags & PeekOut_CLICK_TO_EXIT) && input->input_count > 0)
-        {
-            peek_out_trigger_stop(milton);
-        }
-
-        if ( milton->peek_out->peek_out_ended ) {
-            i64 panx = lerp(peek->end_pan.x, peek->begin_pan.x, interp);
-            i64 pany = lerp(peek->end_pan.y, peek->begin_pan.y, interp);
-
-            v2l pan = { panx, pany };
-
-            milton->view->pan_center = pan;
-            milton->view->zoom_center = milton->view->screen_size / 2;
-            gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
-
-            if ( difference_in_ms(peek->begin_anim_time, platform_get_walltime()) > peek_out_duration_ms(milton) ) {
-                milton_leave_mode(milton);
-            }
-        }
-
-        {
-            i32 width = 100;
-            i32 height = 50;
-            i32 line_width = 2;
-
-            // TODO: Interpolate pan vector
-            f32 scale = (f32)milton_render_scale_with_interpolation(milton, interp);
-
-            f32 cx = 2 * milton->platform->pointer.x / (f32)milton->view->screen_size.w - 1;
-            f32 cy = (2 * milton->platform->pointer.y / (f32)milton->view->screen_size.h - 1)*-1;
-            f32 left = cx - 1 / scale;
-            f32 right = cx + 1 / scale;
-            f32 top = cy - 1 / scale;
-            f32 bottom = cy + 1 / scale;
-
-            imm_rect(milton->renderer, left, right, top, bottom, line_width);
-        }
-    }
-}
-
 void
 drag_brush_size_start(Milton* milton, v2i pointer)
 {
@@ -1277,7 +1115,6 @@ transform_start(Milton* milton, v2i pointer)
 {
     if (milton->current_mode != MiltonMode::TRANSFORM) {
         milton_enter_mode(milton, MiltonMode::TRANSFORM);
-        milton_set_zoom_at_screen_center(milton);
     }
 }
 
@@ -1352,29 +1189,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         milton->render_settings.do_full_redraw = true;
     }
 
-    if ( input->scale ) {
-        milton->render_settings.do_full_redraw = true;
-
-        f32 scale_factor = SCALE_FACTOR;
-        i32 view_scale_limit = VIEW_SCALE_LIMIT;
-
-        i32 min_scale = MINIMUM_SCALE;
-
-        // Update the current brush if it's canvas-relative
-        if (milton->working_stroke.flags & StrokeFlag_RELATIVE_TO_CANVAS) {
-
-            i32* psize = pointer_to_brush_size(milton);
-
-            if ( input->scale > 0 ) {
-                (*psize) = (i32)((*psize) * scale_factor) + 1;
-            }
-            else if ( input->scale < 0 && (*psize) < view_scale_limit ) {
-                (*psize) = (i32)(ceilf((*psize) / scale_factor));
-            }
-        }
-
-        milton_update_brushes(milton);
-    }
     else if ( (input->flags & MiltonInputFlags_PANNING) ) {
         // If we are *not* zooming and we are panning, we can copy most of the
         // framebuffer
@@ -1545,9 +1359,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
             milton_leave_mode(milton);
         }
         render_flags |= RenderBackendFlags_GUI_VISIBLE;
-    }
-    else if (milton->current_mode == MiltonMode::PEEK_OUT) {
-        peek_out_tick(milton, input);
     }
     else if (milton->current_mode == MiltonMode::DRAG_BRUSH_SIZE) {
         drag_brush_size_tick(milton, input);
@@ -1801,13 +1612,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         }
     }
 
-    static u64 scale_of_last_full_redraw = 0;
-
-    if (scale_of_last_full_redraw != milton_render_scale(milton)) {
-        // We want to draw everything when we're scaling up and down.
-        milton->render_settings.do_full_redraw = true;
-    }
-
     // Note: We flip the rectangles. GL is bottom-left by default.
     if ( milton->render_settings.do_full_redraw ) {
         view_width = milton->view->screen_size.w;
@@ -1816,7 +1620,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         // that the size of the screen will be used to determine if each stroke
         // should be freed from GPU memory.
         clip_flags = ClipFlags_UPDATE_GPU_DATA;
-        scale_of_last_full_redraw = milton_render_scale(milton);
     }
     else if (has_working_stroke) {
         Rect bounds  = canvas_to_raster_bounding_rect(milton->view, milton->working_stroke.bounding_rect);

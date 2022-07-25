@@ -885,7 +885,6 @@ relative_to_render_center(RenderBackend* r, v2l point)
 void
 gpu_update_canvas(RenderBackend* r, CanvasState* canvas, CanvasView* view)
 {
-    v2i center = view->zoom_center;
     v2l pan = view->pan_center;
 
     v2i new_render_center = VEC2I(pan / (i64)(1<<RENDER_CHUNK_SIZE_LOG2));
@@ -914,7 +913,6 @@ gpu_update_canvas(RenderBackend* r, CanvasState* canvas, CanvasView* view)
         gl::set_uniform_mat2(ps[i], "u_rotation", matrix);
         gl::set_uniform_mat2(ps[i], "u_rotation_inverse", matrix_inverse);
         gl::set_uniform_vec2i(ps[i], "u_pan_center", 1, relative_to_render_center(r, pan).d);
-        gl::set_uniform_vec2i(ps[i], "u_zoom_center", 1, center.d);
     }
 
     float fscreen[] = { (float)view->screen_size.x, (float)view->screen_size.y };
@@ -1820,15 +1818,11 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
     v2i center = milton->view->screen_size / 2;
     v2i pan_delta = v2i{x + (w / 2), y + (h / 2)} - center;
 
-    milton_set_zoom_at_point(milton, center);
-
     milton->view->pan_center += v2l{pan_delta.x, pan_delta.y};
 
     milton->view->screen_size = v2i{buf_w, buf_h};
     r->width = buf_w;
     r->height = buf_h;
-
-    milton->view->zoom_center = milton->view->screen_size / 2;
 
     gpu_resize(r, view);
     gpu_update_canvas(r, milton->canvas, view);

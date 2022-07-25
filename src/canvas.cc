@@ -8,8 +8,8 @@ v2l
 raster_to_canvas(CanvasView* view, v2l raster_point)
 {
     return {
-        raster_point.x - view->zoom_center.x + view->pan_center.x,
-        raster_point.y - view->zoom_center.y + view->pan_center.y,
+        raster_point.x + view->pan_center.x,
+        raster_point.y + view->pan_center.y,
     };
 }
 
@@ -17,8 +17,8 @@ v2l
 canvas_to_raster(CanvasView* view, v2l canvas_point)
 {
     return {
-        canvas_point.x - view->pan_center.x + view->zoom_center.x,
-        canvas_point.y - view->pan_center.y + view->zoom_center.y,
+        canvas_point.x - view->pan_center.x,
+        canvas_point.y - view->pan_center.y,
     };
 }
 

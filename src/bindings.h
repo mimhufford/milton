@@ -11,8 +11,6 @@ enum BindableAction
 
     Action_DECREASE_BRUSH_SIZE = Action_FIRST,
     Action_INCREASE_BRUSH_SIZE,
-    Action_ZOOM_IN,
-    Action_ZOOM_OUT,
     Action_REDO,
     Action_UNDO,
     Action_EXPORT,
@@ -50,7 +48,6 @@ enum BindableAction
     Action_SET_BRUSH_ALPHA_90,
     Action_SET_BRUSH_ALPHA_100,
     Action_HELP,
-    Action_PEEK_OUT,
     Action_DRAG_BRUSH_SIZE,
     Action_TRANSFORM,
 
@@ -62,7 +59,6 @@ enum BindableAction
     Action_COUNT,
 
     // Press-and-release actions.
-    ActionRelease_PEEK_OUT,
     ActionRelease_DRAG_BRUSH_SIZE,
     ActionRelease_TRANSFORM,
 

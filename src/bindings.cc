@@ -55,10 +55,7 @@ set_default_bindings(MiltonBindings* bs)
     repeatable_binding(bs, (ModifierFlags)(Modifier_CTRL | Modifier_SHIFT), 'z', Action_REDO);
     repeatable_binding(bs, Modifier_NONE, '[', Action_DECREASE_BRUSH_SIZE);
     repeatable_binding(bs, Modifier_NONE, ']', Action_INCREASE_BRUSH_SIZE);
-    repeatable_binding(bs, Modifier_CTRL, '=', Action_ZOOM_IN);
-    repeatable_binding(bs, Modifier_CTRL, '-', Action_ZOOM_OUT);
 
-    binding(bs, Modifier_CTRL, '-', Action_ZOOM_OUT);
     binding(bs, Modifier_CTRL, 'e', Action_EXPORT);
     binding(bs, Modifier_CTRL, 'q', Action_QUIT);
     binding(bs, Modifier_CTRL, 'n', Action_NEW);
@@ -97,7 +94,6 @@ set_default_bindings(MiltonBindings* bs)
     binding(bs, Modifier_CTRL, '9', Action_SET_BRUSH_ALPHA_90);
     binding(bs, Modifier_CTRL, '0', Action_SET_BRUSH_ALPHA_100);
 
-    binding_with_release(bs, Modifier_NONE, '`', Action_PEEK_OUT, ActionRelease_PEEK_OUT);
     binding_with_release(bs, Modifier_SHIFT, Binding::UNBOUND, Action_DRAG_BRUSH_SIZE, ActionRelease_DRAG_BRUSH_SIZE);
     binding_with_release(bs, Modifier_ALT, Binding::UNBOUND, Action_TRANSFORM, ActionRelease_TRANSFORM);
 
@@ -117,14 +113,6 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         } break;
         case Action_INCREASE_BRUSH_SIZE: {
             milton_increase_brush_size(milton);
-        } break;
-        case Action_ZOOM_IN: {
-            input->scale++;
-            milton_set_zoom_at_screen_center(milton);
-        } break;
-        case Action_ZOOM_OUT: {
-            input->scale--;
-            milton_set_zoom_at_screen_center(milton);
         } break;
         case Action_REDO: {
             input->flags |= MiltonInputFlags_REDO;
@@ -276,12 +264,6 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         } break;
         case Action_HELP: {
             gui_toggle_help(milton->gui);
-        } break;
-        case Action_PEEK_OUT: {
-            peek_out_trigger_start(milton);
-        } break;
-        case ActionRelease_PEEK_OUT: {
-            peek_out_trigger_stop(milton);
         } break;
         case Action_DRAG_BRUSH_SIZE: {
             drag_brush_size_start(milton, pointer);

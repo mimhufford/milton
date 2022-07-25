@@ -380,22 +380,6 @@ sdl_event_loop(Milton* milton, PlatformState* platform)
                 }
                 break;
             }
-            case SDL_MOUSEWHEEL: {
-                if ( event.wheel.windowID != platform->window_id ) {
-                    break;
-                }
-                if ( !ImGui::GetIO().WantCaptureMouse ) {
-                    milton_input.scale += event.wheel.y;
-                    v2i zoom_center = platform->pointer;
-
-                    milton_set_zoom_at_point(milton, zoom_center);
-                    // ImGui has a delay of 1 frame when displaying zoom info.
-                    // Force next frame to have the value up to date.
-                    platform->force_next_frame = true;
-                }
-
-                break;
-            }
             case SDL_KEYDOWN: {
                 shortcut_handle_key(milton, platform, &event, &milton_input, /*is_keyup*/false);
             } break;
