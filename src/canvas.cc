@@ -150,11 +150,4 @@ namespace layer
         push(&layer->strokes, stroke);
         return peek(&layer->strokes);
     }
-
-    i32
-    number_of_layers(Layer* layer)
-    {
-        return 1;
-    }
-
 }  // namespace layer

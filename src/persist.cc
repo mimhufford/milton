@@ -78,7 +78,6 @@ milton_load(Milton* milton)
 {
     // Declare variables here to silence compiler warnings about using GOTO.
     i32 history_count = 0;
-    i32 num_layers = 0;
     int err = 0;
 
     i32 layer_guid = 0;
@@ -158,80 +157,76 @@ milton_load(Milton* milton)
             goto END;
         }
 
-        num_layers = 0;
-        READ(&num_layers, sizeof(i32), 1, fd);
         READ(&layer_guid, sizeof(i32), 1, fd);
 
-        for ( int layer_i = 0; ok && layer_i < num_layers; ++layer_i ) {
-            if (ok) { milton_new_layer(milton); }
-            Layer* layer = milton->canvas->root_layer;
+        if (ok) { milton_new_layer(milton); }
+        Layer* layer = milton->canvas->root_layer;
 
-            if ( ok ) {
-                i32 num_strokes = 0;
-                READ(&num_strokes, sizeof(i32), 1, fd);
+        if ( ok ) {
+            i32 num_strokes = 0;
+            READ(&num_strokes, sizeof(i32), 1, fd);
 
-                for ( i32 stroke_i = 0; ok && stroke_i < num_strokes; ++stroke_i ) {
-                    Stroke stroke = {};
+            for ( i32 stroke_i = 0; ok && stroke_i < num_strokes; ++stroke_i ) {
+                Stroke stroke = {};
 
-                    stroke.id = milton->canvas->stroke_id_count++;
+                stroke.id = milton->canvas->stroke_id_count++;
 
-                    if (!read_brushes(&stroke.brush, 1, fd)) {
-                        ok = false;
-                        goto END;
-                    }
-                    READ(&stroke.flags, sizeof(stroke.flags), 1, fd);
+                if (!read_brushes(&stroke.brush, 1, fd)) {
+                    ok = false;
+                    goto END;
+                }
+                READ(&stroke.flags, sizeof(stroke.flags), 1, fd);
 
-                    READ(&stroke.num_points, sizeof(i32), 1, fd);
+                READ(&stroke.num_points, sizeof(i32), 1, fd);
 
-                    if ( stroke.num_points > STROKE_MAX_POINTS || stroke.num_points <= 0 ) {
-                        milton_log("ERROR: File has a stroke with %d points\n",
-                                   stroke.num_points);
-                        // Older versions have a possible off-by-one bug here.
-                        if (stroke.num_points == STROKE_MAX_POINTS)  {
-                            stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
-                            READ(stroke.points, sizeof(v2l), (size_t)stroke.num_points, fd);
-                            stroke.pressures = arena_alloc_array(&canvas->arena, stroke.num_points, f32);
-                            READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
-                            READ(&stroke.layer_id, sizeof(i32), 1, fd);
-#if STROKE_DEBUG_VIZ
-                            stroke.debug_flags = arena_alloc_array(&canvas->arena, stroke.num_points, int);
-#endif
-
-                            stroke.bounding_rect = bounding_box_for_stroke(&stroke);
-
-                            layer::layer_push_stroke(layer, stroke);
-                        } else {
-                            ok = false;
-                            goto END;
-                        }
-                    } else {
-                        if ( milton_binary_version >= 4 ) {
-                            stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
-                            READ(stroke.points, sizeof(v2l), (size_t)stroke.num_points, fd);
-                        } else {
-                            stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
-                            v2i* points_32bit = (v2i*)mlt_calloc((size_t)stroke.num_points, sizeof(v2i), "Persist");
-
-                            READ(points_32bit, sizeof(v2i), (size_t)stroke.num_points, fd);
-                            for (int i = 0; i < stroke.num_points; ++i) {
-                                stroke.points[i] = VEC2L(points_32bit[i]);
-                            }
-                        }
-#if STROKE_DEBUG_VIZ
-                        stroke.debug_flags = arena_alloc_array(&canvas->arena, stroke.num_points, int);
-#endif
+                if ( stroke.num_points > STROKE_MAX_POINTS || stroke.num_points <= 0 ) {
+                    milton_log("ERROR: File has a stroke with %d points\n",
+                                stroke.num_points);
+                    // Older versions have a possible off-by-one bug here.
+                    if (stroke.num_points == STROKE_MAX_POINTS)  {
+                        stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
+                        READ(stroke.points, sizeof(v2l), (size_t)stroke.num_points, fd);
                         stroke.pressures = arena_alloc_array(&canvas->arena, stroke.num_points, f32);
                         READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
                         READ(&stroke.layer_id, sizeof(i32), 1, fd);
-                        stroke.bounding_rect = bounding_box_for_stroke(&stroke);
-                        layer::layer_push_stroke(layer, stroke);
-                    }
-                }
+#if STROKE_DEBUG_VIZ
+                        stroke.debug_flags = arena_alloc_array(&canvas->arena, stroke.num_points, int);
+#endif
 
-                i64 stroke_count = count(&layer->strokes);
-                if (stroke_count > 0) {
-                    milton->working_stroke.flags = layer->strokes[ stroke_count - 1]->flags;
+                        stroke.bounding_rect = bounding_box_for_stroke(&stroke);
+
+                        layer::layer_push_stroke(layer, stroke);
+                    } else {
+                        ok = false;
+                        goto END;
+                    }
+                } else {
+                    if ( milton_binary_version >= 4 ) {
+                        stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
+                        READ(stroke.points, sizeof(v2l), (size_t)stroke.num_points, fd);
+                    } else {
+                        stroke.points = arena_alloc_array(&canvas->arena, stroke.num_points, v2l);
+                        v2i* points_32bit = (v2i*)mlt_calloc((size_t)stroke.num_points, sizeof(v2i), "Persist");
+
+                        READ(points_32bit, sizeof(v2i), (size_t)stroke.num_points, fd);
+                        for (int i = 0; i < stroke.num_points; ++i) {
+                            stroke.points[i] = VEC2L(points_32bit[i]);
+                        }
+                    }
+#if STROKE_DEBUG_VIZ
+                    stroke.debug_flags = arena_alloc_array(&canvas->arena, stroke.num_points, int);
+#endif
+                    stroke.pressures = arena_alloc_array(&canvas->arena, stroke.num_points, f32);
+                    READ(stroke.pressures, sizeof(f32), (size_t)stroke.num_points, fd);
+                    READ(&stroke.layer_id, sizeof(i32), 1, fd);
+                    stroke.bounding_rect = bounding_box_for_stroke(&stroke);
+                    layer::layer_push_stroke(layer, stroke);
                 }
+            }
+
+            i64 stroke_count = count(&layer->strokes);
+            if (stroke_count > 0) {
+                milton->working_stroke.flags = layer->strokes[ stroke_count - 1]->flags;
             }
         }
 
@@ -350,13 +345,11 @@ milton_save(Milton* milton)
 
         if ( write_data(&milton_magic, sizeof(u32), 1, fd) ) {
             milton_binary_version = milton->persist->mlt_binary_version;
-            i32 num_layers = layer::number_of_layers(milton->canvas->root_layer);
 
             mlt_assert(sizeof(CanvasView) == milton->view->size);
 
             if ( write_data(&milton_binary_version, sizeof(u32), 1, fd) &&
                  write_data(milton->view, sizeof(CanvasView), 1, fd) &&
-                 write_data(&num_layers, sizeof(i32), 1, fd) &&
                  write_data(&milton->canvas->layer_guid, sizeof(i32), 1, fd) ) {
 
                 //

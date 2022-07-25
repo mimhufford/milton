@@ -47,5 +47,4 @@ void    reset_transform_at_origin(v2l* pan_center);
 namespace layer {
     i64     count_strokes (Layer* root);
     Stroke* layer_push_stroke (Layer* layer, Stroke stroke);
-    i32     number_of_layers (Layer* root);
 }
