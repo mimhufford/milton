@@ -1191,21 +1191,18 @@ void
 gpu_free_strokes(RenderBackend* r, CanvasState* canvas)
 {
     if ( canvas->root_layer != NULL ) {
-        for ( Layer* l = canvas->root_layer;
-              l != NULL;
-              l = l->next ) {
-            StrokeList* sl = &l->strokes;
-            StrokeBucket* bucket = &sl->root;
-            i64 count = sl->count;
-            while ( bucket ) {
-                if ( count >= STROKELIST_BUCKET_COUNT ) {
-                    count -= STROKELIST_BUCKET_COUNT;
-                    gpu_free_strokes(bucket->data, STROKELIST_BUCKET_COUNT, r);
-                } else {
-                    gpu_free_strokes(bucket->data, count, r);
-                }
-                bucket = bucket->next;
+        Layer* l = canvas->root_layer;
+        StrokeList* sl = &l->strokes;
+        StrokeBucket* bucket = &sl->root;
+        i64 count = sl->count;
+        while ( bucket ) {
+            if ( count >= STROKELIST_BUCKET_COUNT ) {
+                count -= STROKELIST_BUCKET_COUNT;
+                gpu_free_strokes(bucket->data, STROKELIST_BUCKET_COUNT, r);
+            } else {
+                gpu_free_strokes(bucket->data, count, r);
             }
+            bucket = bucket->next;
         }
     }
 }
@@ -1233,89 +1230,88 @@ gpu_clip_strokes_and_update(Arena* arena,
             r->clipped_count = 0;
         }
         #endif
-        for ( Layer* l = root_layer; l != NULL; l = l->next ) {
-            StrokeBucket* bucket = &l->strokes.root;
-            i64 bucket_i = 0;
+        Layer* l = root_layer;
+        StrokeBucket* bucket = &l->strokes.root;
+        i64 bucket_i = 0;
 
-            while ( bucket ) {
-                i64 count = 0;
-                if ( l->strokes.count < bucket_i * STROKELIST_BUCKET_COUNT ) {
-                    // There is an allocated bucket but we have already iterated
-                    // through all the actual strokes.
-                    break;
-                }
-                if ( l->strokes.count - bucket_i*STROKELIST_BUCKET_COUNT >= STROKELIST_BUCKET_COUNT ) {
-                    count = STROKELIST_BUCKET_COUNT;
-                } else {
-                    count = l->strokes.count % STROKELIST_BUCKET_COUNT;
-                }
+        while ( bucket ) {
+            i64 count = 0;
+            if ( l->strokes.count < bucket_i * STROKELIST_BUCKET_COUNT ) {
+                // There is an allocated bucket but we have already iterated
+                // through all the actual strokes.
+                break;
+            }
+            if ( l->strokes.count - bucket_i*STROKELIST_BUCKET_COUNT >= STROKELIST_BUCKET_COUNT ) {
+                count = STROKELIST_BUCKET_COUNT;
+            } else {
+                count = l->strokes.count % STROKELIST_BUCKET_COUNT;
+            }
 
-                Rect bbox = bucket->bounding_rect;
+            Rect bbox = bucket->bounding_rect;
 
-                b32 bucket_outside =   screen_bounds.left   > bbox.right
-                                    || screen_bounds.top    > bbox.bottom
-                                    || screen_bounds.right  < bbox.left
-                                    || screen_bounds.bottom < bbox.top;
+            b32 bucket_outside =   screen_bounds.left   > bbox.right
+                                || screen_bounds.top    > bbox.bottom
+                                || screen_bounds.right  < bbox.left
+                                || screen_bounds.bottom < bbox.top;
 
-                if ( !bucket_outside ) {
-                    for ( i64 i = 0; i < count; ++i ) {
-                        Stroke* s = &bucket->data[i];
+            if ( !bucket_outside ) {
+                for ( i64 i = 0; i < count; ++i ) {
+                    Stroke* s = &bucket->data[i];
 
-                        if ( s != NULL ) {
-                            Rect bounds = s->bounding_rect;
+                    if ( s != NULL ) {
+                        Rect bounds = s->bounding_rect;
 
-                            b32 stroke_outside =   screen_bounds.left   > bounds.right
-                                                || screen_bounds.top    > bounds.bottom
-                                                || screen_bounds.right  < bounds.left
-                                                || screen_bounds.bottom < bounds.top;
+                        b32 stroke_outside =   screen_bounds.left   > bounds.right
+                                            || screen_bounds.top    > bounds.bottom
+                                            || screen_bounds.right  < bounds.left
+                                            || screen_bounds.bottom < bounds.top;
 
-                            i32 area = (bounds.right-bounds.left) * (bounds.bottom-bounds.top);
-                            // Area might be 0 if the stroke is smaller than
-                            // a pixel. We don't draw it in that case.
-                            if ( !stroke_outside && area!=0 ) {
-                                gpu_cook_stroke(arena, r, s);
-                                push(clip_array, *get_render_element(s->render_handle));
-                            }
-                            else if ( stroke_outside && ( flags & ClipFlags_UPDATE_GPU_DATA ) ) {
-                                // If it is far away, delete.
-                                i32 distance = MLT_ABS(bounds.left - x + bounds.top - y);
-                                const i32 min_number_of_screens = 4;
-                                if (    bounds.top    < y - min_number_of_screens*h
-                                     || bounds.bottom > y+h + min_number_of_screens*h
-                                     || bounds.left   > x+w + min_number_of_screens*w
-                                     || bounds.right  < x - min_number_of_screens*w ) {
-                                    gpu_free_strokes(s, 1, r);
-                                }
+                        i32 area = (bounds.right-bounds.left) * (bounds.bottom-bounds.top);
+                        // Area might be 0 if the stroke is smaller than
+                        // a pixel. We don't draw it in that case.
+                        if ( !stroke_outside && area!=0 ) {
+                            gpu_cook_stroke(arena, r, s);
+                            push(clip_array, *get_render_element(s->render_handle));
+                        }
+                        else if ( stroke_outside && ( flags & ClipFlags_UPDATE_GPU_DATA ) ) {
+                            // If it is far away, delete.
+                            i32 distance = MLT_ABS(bounds.left - x + bounds.top - y);
+                            const i32 min_number_of_screens = 4;
+                            if (    bounds.top    < y - min_number_of_screens*h
+                                    || bounds.bottom > y+h + min_number_of_screens*h
+                                    || bounds.left   > x+w + min_number_of_screens*w
+                                    || bounds.right  < x - min_number_of_screens*w ) {
+                                gpu_free_strokes(s, 1, r);
                             }
                         }
                     }
                 }
-                else if ( flags & ClipFlags_UPDATE_GPU_DATA ) {
-                    gpu_free_strokes(bucket->data, count, r);
-                }
-                #if MILTON_ENABLE_PROFILING
-                {
-                    for ( i64 i = 0; i < count; ++i ) {
-                        Stroke* s = &bucket->data[i];
-                        RenderElement* re = get_render_element(s->render_handle);
-                        if ( re && re->vbo_stroke != 0 ) {
-                            r->clipped_count++;
-                        }
+            }
+            else if ( flags & ClipFlags_UPDATE_GPU_DATA ) {
+                gpu_free_strokes(bucket->data, count, r);
+            }
+            #if MILTON_ENABLE_PROFILING
+            {
+                for ( i64 i = 0; i < count; ++i ) {
+                    Stroke* s = &bucket->data[i];
+                    RenderElement* re = get_render_element(s->render_handle);
+                    if ( re && re->vbo_stroke != 0 ) {
+                        r->clipped_count++;
                     }
                 }
-                #endif
-                bucket = bucket->next;
-                bucket_i += 1;
             }
-
-            if ( working_stroke->num_points > 0 ) {
-                gpu_cook_stroke(arena, r, working_stroke, CookStroke_UPDATE_WORKING_STROKE);
-
-                push(clip_array, *get_render_element(working_stroke->render_handle));
-            }
-
-            auto* p = push(clip_array, layer_element);
+            #endif
+            bucket = bucket->next;
+            bucket_i += 1;
         }
+
+        if ( working_stroke->num_points > 0 ) {
+            gpu_cook_stroke(arena, r, working_stroke, CookStroke_UPDATE_WORKING_STROKE);
+
+            push(clip_array, *get_render_element(working_stroke->render_handle));
+        }
+
+        auto* p = push(clip_array, layer_element);
     }
 }
 

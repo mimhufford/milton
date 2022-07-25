@@ -344,45 +344,41 @@ milton_save(Milton* milton)
                 //
                 // Layer contents
                 //
-
                 bool could_write_layer_contents = true;
 
-                for ( Layer* layer = milton->canvas->root_layer;
-                      could_write_layer_contents && layer;
-                      layer=layer->next  ) {
-                    if ( layer->strokes.count > INT_MAX ) {
-                        milton_die_gracefully("FATAL. Number of strokes in layer greater than can be stored in file format. ");
-                    }
-                    i32 num_strokes = (i32)layer->strokes.count;
+                Layer* layer = milton->canvas->root_layer;
+                if ( layer->strokes.count > INT_MAX ) {
+                    milton_die_gracefully("FATAL. Number of strokes in layer greater than can be stored in file format. ");
+                }
+                i32 num_strokes = (i32)layer->strokes.count;
 
-                    bool could_write_strokes = true;
+                bool could_write_strokes = true;
 
-                    if ( write_data(&num_strokes, sizeof(i32), 1, fd) ) {
-                        for ( i32 stroke_i = 0;
-                              could_write_strokes && stroke_i < num_strokes;
-                              ++stroke_i ) {
-                            Stroke* stroke = get(&layer->strokes, stroke_i);
-                            mlt_assert(stroke->num_points > 0);
-                            if ( stroke->num_points > 0 && stroke->num_points <= STROKE_MAX_POINTS ) {
-                                i32 size_of_brush = sizeof(Brush);
-                                if ( !write_data(&size_of_brush, sizeof(i32), 1, fd ) ||
-                                     !write_data(&stroke->brush, sizeof(Brush), 1, fd) ||
-                                     !write_data(&stroke->flags, sizeof(stroke->flags), 1, fd) ||
-                                     !write_data(&stroke->num_points, sizeof(i32), 1, fd) ||
-                                     !write_data(stroke->points, sizeof(v2l), (size_t)stroke->num_points, fd) ||
-                                     !write_data(stroke->pressures, sizeof(f32), (size_t)stroke->num_points, fd) ||
-                                     !write_data(&stroke->layer_id, sizeof(i32), 1, fd) ) {
-                                    could_write_strokes = false;
-                                    break;
-                                }
-                            } else {
-                                milton_log("WARNING: Trying to write a stroke of size %d\n", stroke->num_points);
+                if ( write_data(&num_strokes, sizeof(i32), 1, fd) ) {
+                    for ( i32 stroke_i = 0;
+                            could_write_strokes && stroke_i < num_strokes;
+                            ++stroke_i ) {
+                        Stroke* stroke = get(&layer->strokes, stroke_i);
+                        mlt_assert(stroke->num_points > 0);
+                        if ( stroke->num_points > 0 && stroke->num_points <= STROKE_MAX_POINTS ) {
+                            i32 size_of_brush = sizeof(Brush);
+                            if ( !write_data(&size_of_brush, sizeof(i32), 1, fd ) ||
+                                    !write_data(&stroke->brush, sizeof(Brush), 1, fd) ||
+                                    !write_data(&stroke->flags, sizeof(stroke->flags), 1, fd) ||
+                                    !write_data(&stroke->num_points, sizeof(i32), 1, fd) ||
+                                    !write_data(stroke->points, sizeof(v2l), (size_t)stroke->num_points, fd) ||
+                                    !write_data(stroke->pressures, sizeof(f32), (size_t)stroke->num_points, fd) ||
+                                    !write_data(&stroke->layer_id, sizeof(i32), 1, fd) ) {
+                                could_write_strokes = false;
+                                break;
                             }
+                        } else {
+                            milton_log("WARNING: Trying to write a stroke of size %d\n", stroke->num_points);
                         }
-                    } else {
-                        could_write_strokes = false;
-                        could_write_layer_contents = false;
                     }
+                } else {
+                    could_write_strokes = false;
+                    could_write_layer_contents = false;
                 }
 
                 if ( could_write_layer_contents ) {

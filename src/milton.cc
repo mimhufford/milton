@@ -930,13 +930,10 @@ milton_validate(Milton* milton)
                    stroke_count);
         milton->canvas->history = 0;
         i32 id = 0;
-        for ( Layer *l = milton->canvas->root_layer;
-              l != NULL;
-              l = l->next ) {
-            for ( i64 si = 0; si < l->strokes.count; ++si ) {
-                Stroke* s = get(&l->strokes, si);
-                milton->canvas->history += 1;
-            }
+        Layer *l = milton->canvas->root_layer;
+        for ( i64 si = 0; si < l->strokes.count; ++si ) {
+            Stroke* s = get(&l->strokes, si);
+            milton->canvas->history += 1;
         }
     }
 }

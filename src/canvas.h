@@ -10,9 +10,6 @@
 struct Layer
 {
     StrokeList strokes;
-
-    Layer* prev;
-    Layer* next;
 };
 
 #pragma pack (push, 1)
