@@ -206,13 +206,7 @@ clear_stroke_redo(Milton* milton)
     while ( milton->canvas->stroke_graveyard.count > 0 ) {
         Stroke s = pop(&milton->canvas->stroke_graveyard);
     }
-    for ( i64 i = 0; i < milton->canvas->redo_stack.count; ++i ) {
-        HistoryElement h = milton->canvas->redo_stack.data[i];
-        for ( i64 j = i; j < milton->canvas->redo_stack.count-1; ++j ) {
-            milton->canvas->redo_stack.data[j] = milton->canvas->redo_stack.data[j+1];
-        }
-        pop(&milton->canvas->redo_stack);
-    }
+    milton->canvas->redo_stack = 0;
 }
 
 static void
@@ -700,8 +694,8 @@ milton_reset_canvas(Milton* milton)
     milton->persist->last_save_time = {};
 
     // Clear history
-    release(&canvas->history);
-    release(&canvas->redo_stack);
+    canvas->history = 0;
+    canvas->redo_stack = 0;
     release(&canvas->stroke_graveyard);
 
     size_t size = canvas->arena.min_block_size;
@@ -710,8 +704,6 @@ milton_reset_canvas(Milton* milton)
 
     // New Root
     milton_new_layer(milton);
-
-    mlt_assert(milton->canvas->history.count == 0);
 }
 
 void
@@ -929,21 +921,21 @@ milton_validate(Milton* milton)
 {
     // Make sure that the history reflects the strokes that exist
 
-    i64 history_count = milton->canvas->history.count;
+    i64 history_count = milton->canvas->history;
     i64 stroke_count = layer::count_strokes(milton->canvas->root_layer);
 
     if ( history_count != stroke_count ) {
         milton_log("WARNING: Recreating history. File says History: %d(max %d) Actual strokes: %d\n",
-                   history_count, milton->canvas->history.count,
+                   history_count, milton->canvas->history,
                    stroke_count);
-        reset(&milton->canvas->history);
+        milton->canvas->history = 0;
         i32 id = 0;
         for ( Layer *l = milton->canvas->root_layer;
               l != NULL;
               l = l->next ) {
             for ( i64 si = 0; si < l->strokes.count; ++si ) {
                 Stroke* s = get(&l->strokes, si);
-                push(&milton->canvas->history, {});
+                milton->canvas->history += 1;
             }
         }
     }
@@ -1106,33 +1098,26 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
     { // Undo / Redo
         if ( (input->flags & MiltonInputFlags_UNDO) ) {
-            // Grab undo elements. They might be from deleted layers, so discard dead results.
-            while ( milton->canvas->history.count > 0 ) {
-                HistoryElement h = pop(&milton->canvas->history);
+            if ( milton->canvas->history > 0 ) {
+                milton->canvas->history -= 1;
                 Layer* l = milton->canvas->root_layer;
-                // found a thing to undo.
-                if ( l ) {
-                    if ( l->strokes.count > 0 ) {
-                        Stroke* stroke_ptr = peek(&l->strokes);
-                        Stroke stroke = pop(&l->strokes);
-                        push(&milton->canvas->stroke_graveyard, stroke);
-                        push(&milton->canvas->redo_stack, h);
-
-                        milton->render_settings.do_full_redraw = true;
-                    }
-                    break;
+                if ( l->strokes.count > 0 ) {
+                    Stroke* stroke_ptr = peek(&l->strokes);
+                    Stroke stroke = pop(&l->strokes);
+                    push(&milton->canvas->stroke_graveyard, stroke);
+                    milton->canvas->redo_stack += 1;
+                    milton->render_settings.do_full_redraw = true;
                 }
             }
         }
         else if ( (input->flags & MiltonInputFlags_REDO) ) {
-            if ( milton->canvas->redo_stack.count > 0 ) {
-                HistoryElement h = pop(&milton->canvas->redo_stack);
+            if ( milton->canvas->redo_stack > 0 ) {
+                milton->canvas->redo_stack -= 1;
                 Layer* l = milton->canvas->root_layer;
-                if ( l && count(&milton->canvas->stroke_graveyard) > 0 ) {
+                if ( count(&milton->canvas->stroke_graveyard) > 0 ) {
                     Stroke stroke = pop(&milton->canvas->stroke_graveyard);
                     push(&l->strokes, stroke);
-                    push(&milton->canvas->history, h);
-
+                    milton->canvas->history += 1;
                     milton->render_settings.do_full_redraw = true;
                 }
             }
@@ -1285,7 +1270,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 mlt_assert(new_stroke.num_points <= STROKE_MAX_POINTS);
                 auto* stroke = layer::layer_push_stroke(milton->canvas->root_layer, new_stroke);
 
-                push(&milton->canvas->history, {});
+                milton->canvas->history += 1;
 
                 reset_working_stroke(milton);
 

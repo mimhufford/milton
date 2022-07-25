@@ -63,11 +63,6 @@ enum BrushEnum
     BrushEnum_COUNT,
 };
 
-struct HistoryElement
-{
-    u8 _unused;
-};
-
 struct MiltonGui;
 struct RenderBackend;
 struct CanvasView;
@@ -83,8 +78,8 @@ struct CanvasState
     i32         layer_guid;  // to create unique ids;
     Layer*      root_layer;
 
-    DArray<HistoryElement> history;
-    DArray<HistoryElement> redo_stack;
+    i32 history;
+    i32 redo_stack;
     DArray<Stroke>         stroke_graveyard;
 
     i32         stroke_id_count;

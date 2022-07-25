@@ -77,7 +77,6 @@ void
 milton_load(Milton* milton)
 {
     // Declare variables here to silence compiler warnings about using GOTO.
-    i32 history_count = 0;
     int err = 0;
 
     i32 layer_guid = 0;
@@ -266,12 +265,7 @@ milton_load(Milton* milton)
         }
         READ(&milton->brush_sizes, sizeof(i32), num_brushes, fd);
 
-        history_count = 0;
-        READ(&history_count, sizeof(history_count), 1, fd);
-        reset(&milton->canvas->history);
-        reserve(&milton->canvas->history, history_count);
-        READ(milton->canvas->history.data, sizeof(*milton->canvas->history.data), (size_t)history_count, fd);
-        milton->canvas->history.count = history_count;
+        READ(&milton->canvas->history, sizeof(milton->canvas->history), 1, fd);
 
         err = fclose(fd);
         if ( err != 0 ) {
@@ -448,17 +442,10 @@ milton_save(Milton* milton)
                         }
 
                         if ( could_write_brushes ) {
-                            history_count = (i32)milton->canvas->history.count;
-                            if ( milton->canvas->history.count > INT_MAX ) {
-                                history_count = 0;
-                            }
-
                             //
                             // Undo history
                             //
-
-                            if ( write_data(&history_count, sizeof(history_count), 1, fd) &&
-                                 write_data(milton->canvas->history.data, sizeof(*milton->canvas->history.data), (size_t)history_count, fd) ) {
+                            if ( write_data(&milton->canvas->history, sizeof(milton->canvas->history), 1, fd) ) {
 
                                 //
                                 // Done.
