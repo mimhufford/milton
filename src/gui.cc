@@ -213,25 +213,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
 
                     canvas->working_layer->alpha = alpha;
                 }
-
-                static b32 selecting = false;
-
-                ImGui::Separator();
-
-                LayerEffect* prev = NULL;
-                int effect_id = 1;
-                for ( LayerEffect* e = milton->canvas->working_layer->effects; e != NULL; e = e->next ) {
-                    ImGui::PushID(effect_id);
-                    static bool v = 0;
-                    if ( ImGui::Checkbox(loc(TXT_enabled), (bool*)&e->enabled) ) {
-                        input->flags |= MiltonInputFlags_FULL_REFRESH;
-                    }
-                    ImGui::PopID();
-                    prev = e;
-                    ImGui::Separator();
-                    effect_id++;
-                }
-                // ImGui::Slider
             }
         }
         ImGui::EndChild();

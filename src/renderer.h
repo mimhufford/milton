@@ -7,8 +7,6 @@
 #include "system_includes.h"
 #include "vector.h"
 
-struct LayerEffect;
-
 enum RenderBackendFlags
 {
     RenderBackendFlags_NONE = 0,

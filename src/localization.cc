@@ -103,9 +103,7 @@ init_localization()
         EN(TXT_minimum, "Minimum");
         EN(TXT_hardness, "Hardness");
         EN(TXT_rotation, "Rotation");
-        EN(TXT_blur, "Blur");
         EN(TXT_level, "Level");
-        EN(TXT_delete_blur, "Delete Blur");
         EN(TXT_enabled, "Enabled");
         EN(TXT_default_will_be_cleared, "The default canvas will be cleared. Save it?");
         EN(TXT_reset_view_at_origin, "Reset view at origin");

@@ -1297,7 +1297,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 auto prev_num_points = ws->num_points;
                 milton_stroke_input(milton, input);
                 if ( prev_num_points == 0 && ws->num_points > 0 ) {
-                    // New stroke. Clear screen without blur.
                     milton->render_settings.do_full_redraw = true;
                 }
             }
@@ -1387,7 +1386,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
                 clear_stroke_redo(milton);
 
-                // Make sure we show blurred layers when finishing a stroke.
                 milton->render_settings.do_full_redraw = true;
             }
         }

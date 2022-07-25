@@ -56,7 +56,6 @@ struct RenderElement
         };
         struct {  // For when element is layer.
             f32          layer_alpha;
-            LayerEffect* effects;
         };
     };
 
@@ -89,7 +88,6 @@ struct RenderBackend
     GLuint exporter_program;
     GLuint texture_fill_program;
     GLuint postproc_program;
-    GLuint blur_program;
 #if MILTON_DEBUG
     GLuint simple_program;
 #endif
@@ -628,14 +626,6 @@ gpu_init(RenderBackend* r, CanvasView* view, ColorPicker* picker)
         gl::link_program(r->postproc_program, objs, array_count(objs));
         gl::set_uniform_i(r->postproc_program, "u_canvas", 0);
     }
-    {
-        r->blur_program = glCreateProgram();
-        GLuint objs[2] = {};
-        objs[0] = gl::compile_shader(g_simple_v, GL_VERTEX_SHADER);
-        objs[1] = gl::compile_shader(g_blur_f, GL_FRAGMENT_SHADER);
-        gl::link_program(r->blur_program, objs, array_count(objs));
-        gl::set_uniform_i(r->blur_program, "u_canvas", 0);
-    }
 #if MILTON_DEBUG
     {  // Simple program
         r->simple_program = glCreateProgram();
@@ -867,7 +857,6 @@ set_screen_size(RenderBackend* r, float* fscreen)
         r->exporter_program,
         r->picker_program,
         r->postproc_program,
-        r->blur_program,
     };
     for ( u64 pi = 0; pi < array_count(programs); ++pi ) {
         gl::set_uniform_vec2(programs[pi], "u_screen_size", 1, fscreen);
@@ -1342,7 +1331,6 @@ gpu_clip_strokes_and_update(Arena* arena,
 
             auto* p = push(clip_array, layer_element);
             p->layer_alpha = l->alpha;
-            p->effects = l->effects;
         }
     }
 }
@@ -1356,30 +1344,6 @@ gpu_fill_with_texture(RenderBackend* r, float alpha = 1.0f)
     {
         GLint t_loc = glGetAttribLocation(r->texture_fill_program, "a_position");
         if ( t_loc >= 0 ) {
-            glBindBuffer(GL_ARRAY_BUFFER, r->vbo_screen_quad);
-            glEnableVertexAttribArray((GLuint)t_loc);
-            glVertexAttribPointer(/*attrib location*/ (GLuint)t_loc,
-                                  /*size*/ 2, GL_FLOAT, /*normalize*/ GL_FALSE,
-                                  /*stride*/ 0, /*ptr*/ 0);
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        }
-    }
-}
-
-enum BoxFilterPass
-{
-    BoxFilterPass_VERTICAL = 0,
-    BoxFilterPass_HORIZONTAL = 1,
-};
-static void
-box_filter_pass(RenderBackend* r, int kernel_size, int direction)
-{
-    gl::use_program(r->blur_program);
-    gl::set_uniform_i(r->blur_program, "u_kernel_size", kernel_size);
-    GLint t_loc = glGetAttribLocation(r->blur_program, "a_position");
-    if ( t_loc >= 0 ) {
-        gl::set_uniform_i(r->blur_program, "u_direction", direction);
-        {
             glBindBuffer(GL_ARRAY_BUFFER, r->vbo_screen_quad);
             glEnableVertexAttribArray((GLuint)t_loc);
             glVertexAttribPointer(/*attrib location*/ (GLuint)t_loc,

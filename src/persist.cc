@@ -255,11 +255,6 @@ milton_load(Milton* milton)
                     }
                 }
             }
-
-            if ( milton_binary_version >= 4 ) {
-                i64 num_effects = 0;
-                READ(&num_effects, sizeof(num_effects), 1, fd);
-            }
         }
         milton->view->working_layer_id = saved_working_layer_id;
 
@@ -431,7 +426,6 @@ milton_save(Milton* milton)
                     i32 len = (i32)(strlen(name) + 1);
 
                     bool could_write_strokes = true;
-                    bool could_write_effects = true;
 
                     if ( write_data(&len, sizeof(i32), 1, fd) &&
                          write_data(name, sizeof(char), (size_t)len, fd) &&
@@ -461,19 +455,6 @@ milton_save(Milton* milton)
                         }
                     } else {
                         could_write_strokes = false;
-                    }
-
-                    if ( !could_write_strokes ) {
-                        could_write_effects = false;
-                    }
-                    else {
-                        i64 num_effects = 0;
-                        for ( LayerEffect* e = layer->effects; e != NULL; e = e->next ) {
-                            ++num_effects;
-                        }
-                        write_data(&num_effects, sizeof(num_effects), 1, fd);
-                    }
-                    if (!could_write_strokes || !could_write_effects) {
                         could_write_layer_contents = false;
                     }
                 }

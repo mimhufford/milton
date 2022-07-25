@@ -9,14 +9,6 @@
 
 #define MAX_LAYER_NAME_LEN          64
 
-struct LayerEffect
-{
-    i32 type;  // LayerEffectType enum
-    b32 enabled;
-
-    LayerEffect* next;
-};
-
 enum LayerFlags
 {
     LayerFlags_VISIBLE = (1<<0),
@@ -33,15 +25,8 @@ struct Layer
 
     float alpha;
 
-    LayerEffect* effects;
-
     Layer* prev;
     Layer* next;
-};
-
-enum LayerEffectType
-{
-    LayerEffectType_COUNT,
 };
 
 #pragma pack (push, 1)
@@ -83,7 +68,6 @@ namespace layer {
     Layer*  get_topmost (Layer* root);
     Layer*  get_by_id (Layer* root_layer, i32 id);
     void    layer_toggle_visibility (Layer* layer);
-    b32     layer_has_blur_effect (Layer* layer);
     Stroke* layer_push_stroke (Layer* layer, Stroke stroke);
     i32     number_of_layers (Layer* root);
     void    free_layers (Layer* root);
