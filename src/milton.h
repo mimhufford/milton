@@ -63,16 +63,9 @@ enum BrushEnum
     BrushEnum_COUNT,
 };
 
-enum HistoryElementType
-{
-    HistoryElement_STROKE_ADD,
-    //HistoryElement_LAYER_DELETE,
-};
-
 struct HistoryElement
 {
-    int type;
-    i32 layer_id;  // HistoryElement_STROKE_ADD
+    u8 _unused;
 };
 
 struct MiltonGui;

@@ -208,12 +208,10 @@ clear_stroke_redo(Milton* milton)
     }
     for ( i64 i = 0; i < milton->canvas->redo_stack.count; ++i ) {
         HistoryElement h = milton->canvas->redo_stack.data[i];
-        if ( h.type == HistoryElement_STROKE_ADD ) {
-            for ( i64 j = i; j < milton->canvas->redo_stack.count-1; ++j ) {
-                milton->canvas->redo_stack.data[j] = milton->canvas->redo_stack.data[j+1];
-            }
-            pop(&milton->canvas->redo_stack);
+        for ( i64 j = i; j < milton->canvas->redo_stack.count-1; ++j ) {
+            milton->canvas->redo_stack.data[j] = milton->canvas->redo_stack.data[j+1];
         }
+        pop(&milton->canvas->redo_stack);
     }
 }
 
@@ -930,27 +928,10 @@ static void
 milton_validate(Milton* milton)
 {
     // Make sure that the history reflects the strokes that exist
-    i64 num_layers=0;
-    for ( Layer* l = milton->canvas->root_layer; l != NULL; l = l->next ) {
-        ++num_layers;
-    }
-    i32* layer_ids = (i32*)mlt_calloc((size_t)num_layers, sizeof(i32), "Validate");
-    i64 i = 0;
-    for ( Layer* l = milton->canvas->root_layer; l != NULL; l = l->next ) {
-        ++i;
-    }
 
-    i64 history_count = 0;
-    for ( i64 hi = 0; hi < milton->canvas->history.count; ++hi ) {
-        i32 id = milton->canvas->history.data[hi].layer_id;
-        for ( i64 li = 0; li < num_layers; ++li ) {
-            if ( id == layer_ids[li] ) {
-                ++history_count;
-            }
-        }
-    }
-
+    i64 history_count = milton->canvas->history.count;
     i64 stroke_count = layer::count_strokes(milton->canvas->root_layer);
+
     if ( history_count != stroke_count ) {
         milton_log("WARNING: Recreating history. File says History: %d(max %d) Actual strokes: %d\n",
                    history_count, milton->canvas->history.count,
@@ -962,13 +943,10 @@ milton_validate(Milton* milton)
               l = l->next ) {
             for ( i64 si = 0; si < l->strokes.count; ++si ) {
                 Stroke* s = get(&l->strokes, si);
-                HistoryElement he = { HistoryElement_STROKE_ADD, s->layer_id };
-                push(&milton->canvas->history, he);
+                push(&milton->canvas->history, {});
             }
         }
     }
-
-    mlt_free(layer_ids, "Validate");
 }
 
 
@@ -1149,26 +1127,13 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         else if ( (input->flags & MiltonInputFlags_REDO) ) {
             if ( milton->canvas->redo_stack.count > 0 ) {
                 HistoryElement h = pop(&milton->canvas->redo_stack);
-                switch ( h.type ) {
-                case HistoryElement_STROKE_ADD: {
-                    Layer* l = milton->canvas->root_layer;
-                    if ( l && count(&milton->canvas->stroke_graveyard) > 0 ) {
-                        Stroke stroke = pop(&milton->canvas->stroke_graveyard);
-                        if ( stroke.layer_id == h.layer_id ) {
-                            push(&l->strokes, stroke);
-                            push(&milton->canvas->history, h);
+                Layer* l = milton->canvas->root_layer;
+                if ( l && count(&milton->canvas->stroke_graveyard) > 0 ) {
+                    Stroke stroke = pop(&milton->canvas->stroke_graveyard);
+                    push(&l->strokes, stroke);
+                    push(&milton->canvas->history, h);
 
-                            milton->render_settings.do_full_redraw = true;
-
-                            break;
-                        }
-
-                        stroke = pop(&milton->canvas->stroke_graveyard);  // Keep popping in case the graveyard has info from deleted layers
-                    }
-
-                } break;
-                /* case HistoryElement_LAYER_DELETE: { */
-                /* } break; */
+                    milton->render_settings.do_full_redraw = true;
                 }
             }
         }
@@ -1320,10 +1285,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 mlt_assert(new_stroke.num_points <= STROKE_MAX_POINTS);
                 auto* stroke = layer::layer_push_stroke(milton->canvas->root_layer, new_stroke);
 
-                // Invalidate working stroke render element
-
-                HistoryElement h = { HistoryElement_STROKE_ADD, 0 };
-                push(&milton->canvas->history, h);
+                push(&milton->canvas->history, {});
 
                 reset_working_stroke(milton);
 
