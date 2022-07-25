@@ -53,7 +53,6 @@ void gpu_update_brush_outline(RenderBackend* renderer, i32 cx, i32 cy, i32 radiu
 
 void gpu_resize(RenderBackend* renderer, CanvasView* view);
 void gpu_update_picker(RenderBackend* renderer, ColorPicker* picker);
-void gpu_update_scale(RenderBackend* renderer, i32 scale);
 void gpu_update_export_rect(RenderBackend* renderer, Exporter* exporter);
 void gpu_update_background(RenderBackend* renderer, v3f background_color);
 void gpu_update_canvas(RenderBackend* renderer, CanvasState* canvas, CanvasView* view);
@@ -84,7 +83,7 @@ enum ClipFlags
 };
 void gpu_clip_strokes_and_update(Arena* arena,
                                  RenderBackend* renderer,
-                                 CanvasView* view, i64 render_scale,
+                                 CanvasView* view,
                                  Layer* root_layer, Stroke* working_stroke,
                                  i32 x, i32 y, i32 w, i32 h, ClipFlags flags = ClipFlags_JUST_CLIP);
 

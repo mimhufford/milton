@@ -130,7 +130,6 @@ struct RenderBackend
     i32 height;
 
     v3f background_color;
-    i32 scale;  // zoom
 
     // See MAX_DEPTH_VALUE
     i32 stroke_z;
@@ -737,24 +736,6 @@ gpu_reset_render_flags(RenderBackend* r, int flags)
 }
 
 void
-gpu_update_scale(RenderBackend* r, i32 scale)
-{
-    r->scale = scale;
-    GLuint ps[] = {
-        r->stroke_program,
-        r->stroke_eraser_program,
-        r->stroke_info_program,
-        r->stroke_fill_program_pressure,
-        r->stroke_fill_program_pressure_distance,
-        r->stroke_fill_program_distance,
-        r->stroke_clear_program,
-    };
-    for (sz i = 0; i < array_count(ps); ++i) {
-        gl::set_uniform_i(ps[i], "u_scale", scale);
-    }
-}
-
-void
 gpu_update_export_rect(RenderBackend* r, Exporter* exporter)
 {
     if ( r->vbo_exporter == 0 ) {
@@ -936,7 +917,6 @@ gpu_update_canvas(RenderBackend* r, CanvasState* canvas, CanvasView* view)
         gl::set_uniform_vec2i(ps[i], "u_zoom_center", 1, center.d);
     }
 
-    gpu_update_scale(r, view->scale);
     float fscreen[] = { (float)view->screen_size.x, (float)view->screen_size.y };
     set_screen_size(r, fscreen);
 }
@@ -1010,8 +990,6 @@ gpu_cook_stroke(Arena* arena, RenderBackend* r, Stroke* stroke, CookStrokeOpt co
 #if STROKE_DEBUG_VIZ
             debug = arena_alloc_array(&scratch_arena, count_debug, v3f);
 #endif
-
-            mlt_assert(r->scale > 0);
 
             size_t bounds_i = 0;
             size_t apoints_i = 0;
@@ -1262,7 +1240,6 @@ void
 gpu_clip_strokes_and_update(Arena* arena,
                             RenderBackend* r,
                             CanvasView* view,
-                            i64 scale,
                             Layer* root_layer, Stroke* working_stroke,
                             i32 x, i32 y, i32 w, i32 h, ClipFlags flags)
 {
@@ -1271,7 +1248,7 @@ gpu_clip_strokes_and_update(Arena* arena,
     RenderElement layer_element = {};
     layer_element.flags |= RenderElementFlags_LAYER;
 
-    Rect screen_bounds = raster_to_canvas_bounding_rect(view, x, y, w, h, scale);
+    Rect screen_bounds = raster_to_canvas_bounding_rect(view, x, y, w, h);
 
     reset(clip_array);
 
@@ -1515,7 +1492,7 @@ gpu_render_canvas(RenderBackend* r, i32 view_x, i32 view_y,
                         for (int blur_iter = 0; blur_iter < 3; ++blur_iter) {
                             // Box filter implementation uses the separable property.
                             // Apply horizontal pass and then vertical pass.
-                            int kernel_size = e->blur.kernel_size * e->blur.original_scale / r->scale;
+                            int kernel_size = e->blur.kernel_size * e->blur.original_scale;
                             box_filter_pass(r, kernel_size, BoxFilterPass_VERTICAL);
                             swap(out_texture, in_texture);
                             glBindTexture(texture_target, in_texture);
@@ -1845,16 +1822,13 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
 
     milton_set_zoom_at_point(milton, center);
 
-    milton->view->pan_center += v2l{pan_delta.x, pan_delta.y}*milton->view->scale;
+    milton->view->pan_center += v2l{pan_delta.x, pan_delta.y};
 
     milton->view->screen_size = v2i{buf_w, buf_h};
     r->width = buf_w;
     r->height = buf_h;
 
     milton->view->zoom_center = milton->view->screen_size / 2;
-    if ( scale > 1 ) {
-        milton->view->scale = (i32)ceill(((f32)milton->view->scale / (f32)scale));
-    }
 
     gpu_resize(r, view);
     gpu_update_canvas(r, milton->canvas, view);
@@ -1866,7 +1840,7 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
 
     glViewport(0, 0, buf_w, buf_h);
     glScissor(0, 0, buf_w, buf_h);
-    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->view->scale, milton->canvas->root_layer,
+    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->root_layer,
                                 &milton->working_stroke, 0, 0, buf_w, buf_h);
 
     gpu_render_canvas(r, 0, 0, buf_w, buf_h, background_alpha);
@@ -1930,8 +1904,7 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
     gpu_update_canvas(r, milton->canvas, view);
 
     // Re-render
-    gpu_clip_strokes_and_update(&milton->root_arena,
-                                r, milton->view, milton->view->scale, milton->canvas->root_layer,
+    gpu_clip_strokes_and_update(&milton->root_arena, r, milton->view, milton->canvas->root_layer,
                                 &milton->working_stroke, 0, 0, r->width,
                                 r->height);
     gpu_render(r, 0, 0, r->width, r->height);

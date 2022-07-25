@@ -65,7 +65,7 @@ struct CanvasView
 {
     u32 size;                   // Size of struct
     v2i screen_size;            // Size in pixels
-    i64 scale;                  // Zoom
+    i64 _scale;                 // Zoom
     v2i zoom_center;            // In pixels
     v2l pan_center;             // In canvas scale
     v3f background_color;
@@ -86,7 +86,7 @@ Rect    bounding_box_for_last_n_points (Stroke* stroke, i32 last_n);
 Rect    raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i32 h, i64 scale);
 Rect    canvas_to_raster_bounding_rect(CanvasView* view, Rect rect);
 
-void    reset_transform_at_origin(v2l* pan_center, i64* scale);
+void    reset_transform_at_origin(v2l* pan_center);
 
 // ---- Layer functions.
 

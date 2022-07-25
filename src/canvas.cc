@@ -5,46 +5,25 @@
 #include "utils.h"
 
 v2l
-canvas_to_raster_with_scale(CanvasView* view, v2l canvas_point, i64 scale)
-{
-    i64 x = static_cast<i64>(canvas_point.x - view->pan_center.x);
-    i64 y = static_cast<i64>(canvas_point.y - view->pan_center.y);
-
-    v2l raster_point = {
-        x / scale + view->zoom_center.x,
-        y / scale + view->zoom_center.y,
-    };
-    return raster_point;
-}
-
-v2l
-raster_to_canvas_with_scale(CanvasView* view, v2l raster_point, i64 scale)
-{
-    i64 x = (raster_point.x - view->zoom_center.x);
-    i64 y = (raster_point.y - view->zoom_center.y);
-
-    v2l canvas_point = {
-        x * scale + view->pan_center.x,
-        y * scale + view->pan_center.y,
-    };
-
-    return canvas_point;
-}
-
-v2l
 raster_to_canvas(CanvasView* view, v2l raster_point)
 {
-    return raster_to_canvas_with_scale(view, raster_point, view->scale);
+    return {
+        raster_point.x - view->zoom_center.x + view->pan_center.x,
+        raster_point.y - view->zoom_center.y + view->pan_center.y,
+    };
 }
 
 v2l
 canvas_to_raster(CanvasView* view, v2l canvas_point)
 {
-    return canvas_to_raster_with_scale(view, canvas_point, view->scale);
+    return {
+        canvas_point.x - view->pan_center.x + view->zoom_center.x,
+        canvas_point.y - view->pan_center.y + view->zoom_center.y,
+    };
 }
 
 Rect
-raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i32 h, i64 scale)
+raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i32 h)
 {
     Rect result = rect_without_size();
 
@@ -56,7 +35,7 @@ raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i32 h, i64
     };
 
     for (int i = 0; i < 4; ++i) {
-        v2l p = raster_to_canvas_with_scale(view, corners[i], scale);
+        v2l p = raster_to_canvas(view, corners[i]);
         if (p.x < result.left) {
             result.left = p.x;
         }
@@ -106,10 +85,9 @@ canvas_to_raster_bounding_rect(CanvasView* view, Rect rect)
 }
 
 void
-reset_transform_at_origin(v2l* pan_center, i64* scale)
+reset_transform_at_origin(v2l* pan_center)
 {
     *pan_center = {};
-    *scale = 1024;
 }
 
 

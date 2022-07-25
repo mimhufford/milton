@@ -223,7 +223,7 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
                     e->next = milton->canvas->working_layer->effects;
                     milton->canvas->working_layer->effects = e;
                     e->enabled = true;
-                    e->blur.original_scale = milton->view->scale;
+                    e->blur.original_scale = 1;
                     e->blur.kernel_size = 10;
                     input->flags |= (i32)MiltonInputFlags_FULL_REFRESH;
                 }
@@ -608,7 +608,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                 }
 
                 if ( ImGui::MenuItem(loc(TXT_reset_view_at_origin)) ) {
-                    reset_transform_at_origin(&milton->view->pan_center, &milton->view->scale);
+                    reset_transform_at_origin(&milton->view->pan_center);
                     gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
                 }
 
@@ -648,16 +648,10 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
             char msg[1024];
             WallTime lst = milton->persist->last_save_time;
 
-            // TODO: Translate!
-            snprintf(msg, 1024, "\t%s -- Last saved: %.2d:%.2d:%.2d\t\tZoom level %.2f",
+            snprintf(msg, 1024, "\t%s -- Last saved: %.2d:%.2d:%.2d",
                      (milton->flags & MiltonStateFlags_DEFAULT_CANVAS) ? loc(TXT_OPENBRACKET_default_canvas_CLOSE_BRACKET):
                      file_name,
-                     lst.hours, lst.minutes, lst.seconds,
-                     // We divide by MILTON_DEFAULT_SCALE to give a frame of
-                     // reference to the user, where 1.0 is the default. For
-                     // our calculations in other places, we don't do the
-                     // divide.
-                     log2(1 + milton->view->scale / (double)MILTON_DEFAULT_SCALE) / log2(SCALE_FACTOR));
+                     lst.hours, lst.minutes, lst.seconds);
 
             if ( ImGui::BeginMenu(msg, /*bool enabled = */false) ) {
                 ImGui::EndMenu();
@@ -892,7 +886,7 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
                         || exporter->scale*raster_h > viewport_limits[1] ) {
                     --exporter->scale;
                 }
-                i32 max_scale = milton->view->scale / 2;
+                i32 max_scale = 1;
                 if ( exporter->scale > max_scale) {
                     exporter->scale = max_scale;
                 }
