@@ -556,7 +556,6 @@ milton_init(Milton* milton, i32 width, i32 height, f32 ui_scale, PATH_CHAR* file
     milton->eyedropper = arena_alloc_elem(&milton->root_arena, Eyedropper);
     milton->persist = arena_alloc_elem(&milton->root_arena, MiltonPersist);
     milton->drag_brush = arena_alloc_elem(&milton->root_arena, MiltonDragBrush);
-    milton->transform = arena_alloc_elem(&milton->root_arena, TransformMode);
 
     milton->persist->target_MB_per_sec = 0.2f;
 
@@ -999,41 +998,6 @@ drag_brush_size_tick(Milton* milton, MiltonInput const* input)
 }
 
 void
-transform_start(Milton* milton, v2i pointer)
-{
-    if (milton->current_mode != MiltonMode::TRANSFORM) {
-        milton_enter_mode(milton, MiltonMode::TRANSFORM);
-    }
-}
-
-void
-transform_stop(Milton* milton)
-{
-    if (milton->current_mode == MiltonMode::TRANSFORM) {
-        milton_leave_mode(milton);
-    }
-}
-
-static void
-transform_tick(Milton* milton, MiltonInput const* input)
-{
-    TransformMode* t = milton->transform;
-
-    if (input->input_count > 0) {
-        v2f point = v2l_to_v2f(input->points[ input->input_count - 1 ]);
-        if (t->fsm == TransformModeFSM::START) {
-            t->fsm = TransformModeFSM::ROTATING;
-            t->last_point = point;
-        }
-    }
-    if (input->flags & MiltonInputFlags_CLICKUP) {
-        if (t->fsm == TransformModeFSM::ROTATING) {
-            t->fsm = TransformModeFSM::START;
-        }
-    }
-}
-
-void
 milton_update_and_render(Milton* milton, MiltonInput const* input)
 {
     imm_begin_frame(milton->renderer);
@@ -1225,9 +1189,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
     }
     else if (milton->current_mode == MiltonMode::DRAG_BRUSH_SIZE) {
         drag_brush_size_tick(milton, input);
-    }
-    else if (milton->current_mode == MiltonMode::TRANSFORM) {
-        transform_tick(milton, input);
     }
 
     // ---- End stroke

@@ -124,7 +124,6 @@ enum Texts
     TXT_Action_COLOUR_PRESET_0,
     TXT_Action_HELP,
     TXT_Action_DRAG_BRUSH_SIZE,
-    TXT_Action_TRANSFORM,
 
 #if MILTON_ENABLE_PROFILING
     TXT_Action_TOGGLE_DEBUG_WINDOW,

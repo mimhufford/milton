@@ -47,7 +47,6 @@ enum class MiltonMode
     EYEDROPPER,
     HISTORY,
     DRAG_BRUSH_SIZE,
-    TRANSFORM,  // Scale and rotate
 
     MODE_COUNT,
 };
@@ -122,18 +121,6 @@ struct MiltonDragBrush
     v2i start_point;
 };
 
-enum class TransformModeFSM
-{
-    START,
-    ROTATING,
-};
-
-struct TransformMode
-{
-    TransformModeFSM fsm;
-    v2f last_point;
-};
-
 struct Milton
 {
     u32 flags;  // See MiltonStateFlags
@@ -193,7 +180,6 @@ struct Milton
     MiltonSettings* settings;  // User settings
     MiltonPersist* persist;
     MiltonDragBrush* drag_brush;
-    TransformMode* transform;
 
     // Primitives
     i32 grid_rows;
@@ -313,9 +299,6 @@ void milton_set_background_color(Milton* milton, v3f background_color);
 
 b32  milton_brush_smoothing_enabled(Milton* milton);
 void milton_toggle_brush_smoothing(Milton* milton);
-
-void transform_start(Milton* milton, v2i pointer);
-void transform_stop(Milton* milton);
 
 void drag_brush_size_start(Milton* milton, v2i pointer);
 void drag_brush_size_stop(Milton* milton);

@@ -138,7 +138,6 @@ init_localization()
         EN(TXT_Action_COLOUR_PRESET_0, "Set colour to preset 0");
         EN(TXT_Action_HELP, "Help");
         EN(TXT_Action_DRAG_BRUSH_SIZE, "Drag to change brush size");
-        EN(TXT_Action_TRANSFORM, "Rotate");
     #if MILTON_ENABLE_PROFILING
         EN(TXT_Action_TOGGLE_DEBUG_WINDOW, "Toggle debug window");
     #endif

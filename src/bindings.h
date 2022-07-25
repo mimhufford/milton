@@ -39,7 +39,6 @@ enum BindableAction
     Action_COLOUR_PRESET_0,
     Action_HELP,
     Action_DRAG_BRUSH_SIZE,
-    Action_TRANSFORM,
 
     #if MILTON_ENABLE_PROFILING
         // Debug bindings
@@ -50,7 +49,6 @@ enum BindableAction
 
     // Press-and-release actions.
     ActionRelease_DRAG_BRUSH_SIZE,
-    ActionRelease_TRANSFORM,
 
     Action_COUNT_WITH_RELEASE,
 };
