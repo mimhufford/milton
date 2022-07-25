@@ -76,13 +76,13 @@ milton_update_brushes(Milton* milton)
         mlt_assert(brush->radius < FLT_MAX);
         if ( i == BrushEnum_PEN ) {
             // Alpha is set by the UI
-            brush->color = to_premultiplied(gui_get_picker_rgb(milton->gui), brush->alpha);
+            brush->color = to_premultiplied(gui_get_picker_rgb(milton->gui), 1);
         }
         else if ( i == BrushEnum_ERASER ) {
             // Nothing
         }
         else if ( i == BrushEnum_PRIMITIVE ) {
-            brush->color = to_premultiplied(gui_get_picker_rgb(milton->gui), brush->alpha);
+            brush->color = to_premultiplied(gui_get_picker_rgb(milton->gui), 1);
         }
     }
 }
@@ -524,24 +524,6 @@ void milton_set_brush_colour(Milton* milton, v3f colour)
 }
 
 void
-milton_set_brush_alpha(Milton* milton, float alpha)
-{
-    int brush_enum = milton_get_brush_enum(milton);
-
-    milton->brushes[brush_enum].alpha = alpha;
-    milton->brushes[brush_enum].pressure_opacity_min = min(alpha, milton->brushes[brush_enum].pressure_opacity_min);
-    milton_update_brushes(milton);
-}
-
-float
-milton_get_brush_alpha(Milton const* milton)
-{
-    int brush_enum = milton_get_brush_enum(milton);
-    const float alpha = milton->brushes[brush_enum].alpha;
-    return alpha;
-}
-
-void
 settings_init(MiltonSettings* s)
 {
     s->background_color = v3f{0.2f, 0.2f, 0.2f};
@@ -628,9 +610,6 @@ milton_init(Milton* milton, i32 width, i32 height, f32 ui_scale, PATH_CHAR* file
     // Set default brush.
     {
         for ( int i = 0; i < BrushEnum_COUNT; ++i ) {
-
-            milton->brushes[i].alpha = 1.0f;
-            milton->brushes[i].hardness = k_max_hardness;
 
             switch ( i ) {
             case BrushEnum_PEN: {
@@ -1272,8 +1251,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
             color.rgb = milton->view->background_color;
             color.a = 1;
             if ( milton->current_mode == MiltonMode::PEN ) {
-                color = to_premultiplied(hsv_to_rgb(milton->gui->picker.data.hsv),
-                                         milton_get_brush_alpha(milton));
+                color = to_premultiplied(hsv_to_rgb(milton->gui->picker.data.hsv), 1);
             }
             gpu_update_brush_outline(milton->renderer,
                                      preview_pos.x, preview_pos.y,

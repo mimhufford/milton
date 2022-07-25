@@ -194,29 +194,11 @@ milton_load(Milton* milton)
 
                     stroke.id = milton->canvas->stroke_id_count++;
 
-                    if ( milton_binary_version < 7 ) {
-                        READ(&stroke.brush, sizeof(BrushPreV7), 1, fd);
-
-                        // Previous versions used a magic value for the eraser.
-                        v4f k_eraser_color = {23,34,45,56};
-
-                        if (stroke.brush.color == k_eraser_color) {
-                            stroke.flags |= StrokeFlag_ERASER;
-                        }
-                        stroke.brush.hardness = 10.0f;
+                    if (!read_brushes(&stroke.brush, 1, fd)) {
+                        ok = false;
+                        goto END;
                     }
-                    else if ( milton_binary_version < 8 ) {
-                        READ(&stroke.brush, sizeof(BrushPreV8), 1, fd);
-                        READ(&stroke.flags, sizeof(stroke.flags), 1, fd);
-                        stroke.brush.hardness = 2.0f;
-                    }
-                    else {
-                        if (!read_brushes(&stroke.brush, 1, fd)) {
-                            ok = false;
-                            goto END;
-                        }
-                        READ(&stroke.flags, sizeof(stroke.flags), 1, fd);
-                    }
+                    READ(&stroke.flags, sizeof(stroke.flags), 1, fd);
 
                     READ(&stroke.num_points, sizeof(i32), 1, fd);
 
@@ -321,42 +303,17 @@ milton_load(Milton* milton)
         }
 
         // Brush
-        if ( milton_binary_version >= 2 && milton_binary_version <= 5  ) {
-            // PEN, ERASER
-            for (int i = 0; i < 2; ++i) {
-                READ(&milton->brushes[i], sizeof(BrushPreV7), 1, fd);
-            }
-            // Sizes
-            READ(&milton->brush_sizes, sizeof(i32), 2, fd);
+        u16 num_brushes = 0;
+        READ(&num_brushes, sizeof(u16), 1, fd);
+        if ( num_brushes > BrushEnum_COUNT ) {
+            milton_log("Error loading file: too many brushes: %d\n", num_brushes);
         }
-        else if ( milton_binary_version > 5 ) {
-            u16 num_brushes = 0;
-            READ(&num_brushes, sizeof(u16), 1, fd);
-            if ( num_brushes > BrushEnum_COUNT ) {
-                milton_log("Error loading file: too many brushes: %d\n", num_brushes);
-            }
-            if ( milton_binary_version < 7 ) {
-                for (int i = 0; i < num_brushes; ++i) {
-                    milton->brushes[i] = default_brush();
-                    READ(milton->brushes + i, sizeof(BrushPreV7), 1, fd);
-                }
-            }
-            else if (milton_binary_version < 8) {
-                for (int i = 0; i < num_brushes; ++i) {
-                    milton->brushes[i] = default_brush();
-                    READ(milton->brushes + i, sizeof(BrushPreV8), 1, fd);
-                }
-            }
-            else {
-                if (!read_brushes(milton->brushes, num_brushes, fd)) {
-                    ok = false;
-                    goto END;
-                }
-
-            }
-
-            READ(&milton->brush_sizes, sizeof(i32), num_brushes, fd);
+        
+        if (!read_brushes(milton->brushes, num_brushes, fd)) {
+            ok = false;
+            goto END;
         }
+        READ(&milton->brush_sizes, sizeof(i32), num_brushes, fd);
 
         history_count = 0;
         READ(&history_count, sizeof(history_count), 1, fd);

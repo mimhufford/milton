@@ -141,16 +141,6 @@ init_localization()
         EN(TXT_Action_COLOUR_PRESET_8, "Set colour to preset 8");
         EN(TXT_Action_COLOUR_PRESET_9, "Set colour to preset 9");
         EN(TXT_Action_COLOUR_PRESET_0, "Set colour to preset 0");
-        EN(TXT_Action_SET_BRUSH_ALPHA_10, "Set alpha to 10%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_20, "Set alpha to 20%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_30, "Set alpha to 30%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_40, "Set alpha to 40%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_50, "Set alpha to 50%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_60, "Set alpha to 60%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_70, "Set alpha to 70%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_80, "Set alpha to 80%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_90, "Set alpha to 90%");
-        EN(TXT_Action_SET_BRUSH_ALPHA_100, "Set alpha to 100%");
         EN(TXT_Action_HELP, "Help");
         EN(TXT_Action_DRAG_BRUSH_SIZE, "Drag to change brush size");
         EN(TXT_Action_TRANSFORM, "Rotate");

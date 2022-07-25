@@ -83,17 +83,6 @@ set_default_bindings(MiltonBindings* bs)
     binding(bs, Modifier_NONE, '9', Action_COLOUR_PRESET_9);
     binding(bs, Modifier_NONE, '0', Action_COLOUR_PRESET_0);
 
-    binding(bs, Modifier_CTRL, '1', Action_SET_BRUSH_ALPHA_10);
-    binding(bs, Modifier_CTRL, '2', Action_SET_BRUSH_ALPHA_20);
-    binding(bs, Modifier_CTRL, '3', Action_SET_BRUSH_ALPHA_30);
-    binding(bs, Modifier_CTRL, '4', Action_SET_BRUSH_ALPHA_40);
-    binding(bs, Modifier_CTRL, '5', Action_SET_BRUSH_ALPHA_50);
-    binding(bs, Modifier_CTRL, '6', Action_SET_BRUSH_ALPHA_60);
-    binding(bs, Modifier_CTRL, '7', Action_SET_BRUSH_ALPHA_70);
-    binding(bs, Modifier_CTRL, '8', Action_SET_BRUSH_ALPHA_80);
-    binding(bs, Modifier_CTRL, '9', Action_SET_BRUSH_ALPHA_90);
-    binding(bs, Modifier_CTRL, '0', Action_SET_BRUSH_ALPHA_100);
-
     binding_with_release(bs, Modifier_SHIFT, Binding::UNBOUND, Action_DRAG_BRUSH_SIZE, ActionRelease_DRAG_BRUSH_SIZE);
     binding_with_release(bs, Modifier_ALT, Binding::UNBOUND, Action_TRANSFORM, ActionRelease_TRANSFORM);
 
@@ -232,36 +221,6 @@ binding_dispatch_action(BindableAction a, MiltonInput* input, Milton* milton, v2
         case Action_COLOUR_PRESET_8: milton_set_brush_colour(milton, COLOUR_PRESET_8); break;
         case Action_COLOUR_PRESET_9: milton_set_brush_colour(milton, COLOUR_PRESET_9); break;
         case Action_COLOUR_PRESET_0: milton_set_brush_colour(milton, COLOUR_PRESET_0); break;
-        case Action_SET_BRUSH_ALPHA_10: {
-            milton_set_brush_alpha(milton, 0.1f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_20: {
-            milton_set_brush_alpha(milton, 0.2f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_30: {
-            milton_set_brush_alpha(milton, 0.3f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_40: {
-            milton_set_brush_alpha(milton, 0.4f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_50: {
-            milton_set_brush_alpha(milton, 0.5f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_60: {
-            milton_set_brush_alpha(milton, 0.6f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_70: {
-            milton_set_brush_alpha(milton, 0.7f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_80: {
-            milton_set_brush_alpha(milton, 0.8f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_90: {
-            milton_set_brush_alpha(milton, 0.9f);
-        } break;
-        case Action_SET_BRUSH_ALPHA_100: {
-            milton_set_brush_alpha(milton, 1.0);
-        } break;
         case Action_HELP: {
             gui_toggle_help(milton->gui);
         } break;

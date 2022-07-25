@@ -311,8 +311,6 @@ i32     milton_get_brush_radius(Milton const* milton);   // Between 0 and k_max_
 void    milton_set_brush_size(Milton* milton, i32 size);
 void    milton_increase_brush_size(Milton* milton);
 void    milton_decrease_brush_size(Milton* milton);
-float   milton_get_brush_alpha(Milton const* milton);
-void    milton_set_brush_alpha(Milton* milton, float alpha);
 void    milton_set_brush_colour(Milton* milton, v3f colour);
 
 // Returns false if the pan_delta moves the pan vector outside of the canvas.

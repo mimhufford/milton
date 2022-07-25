@@ -311,29 +311,8 @@ gui_brush_window(MiltonInput* input, PlatformState* platform, Milton* milton, Pl
     // Brush Window
     if ( show_brush_window ) {
         if ( ImGui::Begin(loc(TXT_brushes), NULL, imgui_window_flags) ) {
-            if ( milton->current_mode == MiltonMode::PEN ||
-                 mode_is_for_primitives(milton->current_mode) ) {
-                const float pen_alpha = milton_get_brush_alpha(milton);
-                mlt_assert(pen_alpha >= 0.0f && pen_alpha <= 1.0f);
-                float mut_alpha = pen_alpha*100;
-                ImGui::SliderFloat(loc(TXT_opacity), &mut_alpha, 1, 100, "%.0f%%");
-
-                mut_alpha /= 100.0f;
-                if (mut_alpha > 1.0f ) mut_alpha = 1.0f;
-                if ( mut_alpha != pen_alpha ) {
-                    milton_set_brush_alpha(milton, mut_alpha);
-                    gui->flags |= (i32)MiltonGuiFlags_SHOWING_PREVIEW;
-                }
-            }
             const auto size = milton_get_brush_radius(milton);
             auto mut_size = size;
-
-
-            if (ImGui::CheckboxFlags(loc(TXT_size_relative_to_canvas),
-                                    reinterpret_cast<u32*>(&milton->working_stroke.flags),
-                                    StrokeFlag_RELATIVE_TO_CANVAS)) {
-                // Just set it to be relative...
-            }
 
             ImGui::SliderInt(loc(TXT_brush_size), &mut_size, 1, MILTON_MAX_BRUSH_SIZE);
 
@@ -373,26 +352,6 @@ gui_brush_window(MiltonInput* input, PlatformState* platform, Milton* milton, Pl
             if (milton->current_mode == MiltonMode::PRIMITIVE_GRID ) {
                 ImGui::SliderInt(loc(TXT_grid_columns), &milton->grid_columns, 1, 32);
                 ImGui::SliderInt(loc(TXT_grid_rows), &milton->grid_rows, 1, 32);
-            }
-        }
-
-        {
-            if (!(milton->working_stroke.flags & StrokeFlag_ERASER)) {
-                ImGui::CheckboxFlags(loc(TXT_opacity_pressure), reinterpret_cast<u32*>(&milton->working_stroke.flags), StrokeFlag_PRESSURE_TO_OPACITY);
-                if (milton->working_stroke.flags & StrokeFlag_PRESSURE_TO_OPACITY) {
-                    int brush_enum = milton_get_brush_enum(milton);
-                    f32* min_opacity = &milton->brushes[brush_enum].pressure_opacity_min;
-
-                    ImGui::SliderFloat(loc(TXT_minimum), min_opacity, 0.0f, milton->brushes[brush_enum].alpha);
-                }
-                ImGui::CheckboxFlags(loc(TXT_soft_brush), reinterpret_cast<u32*>(&milton->working_stroke.flags), StrokeFlag_DISTANCE_TO_OPACITY);
-                if (milton->working_stroke.flags & StrokeFlag_DISTANCE_TO_OPACITY) {
-                    int brush_enum = milton_get_brush_enum(milton);
-                    f32* hardness = &milton->brushes[brush_enum].hardness;
-
-                    ImGui::SliderFloat(loc(TXT_hardness), hardness, 1.0f, k_max_hardness);
-                }
-
             }
         }
 
@@ -561,17 +520,6 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                     }
                     if ( ImGui::MenuItem(loc(TXT_increase_brush_size)) ) {
                         for (int i=0;i<5;++i) milton_increase_brush_size(milton);
-                    }
-                    // Opacity shortcuts
-
-                    f32 opacities[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f };
-                    for ( i32 i = 0; i < array_count(opacities); ++i ) {
-                        char entry[128] = {};
-                        snprintf(entry, array_count(entry), "%s %d%% - [%d]",
-                                 loc(TXT_set_opacity_to), (int)(100 * opacities[i]), i == 9 ? 0 : i+1);
-                        if ( ImGui::MenuItem(entry) ) {
-                            milton_set_brush_alpha(milton, opacities[i]);
-                        }
                     }
                     ImGui::EndMenu();
                 }

@@ -1159,18 +1159,10 @@ gpu_cook_stroke(Arena* arena, RenderBackend* r, Stroke* stroke, CookStrokeOpt co
             re->count = (i64)(indices_i);
             re->color = { stroke->brush.color.r, stroke->brush.color.g, stroke->brush.color.b, stroke->brush.color.a };
             re->radius = stroke->brush.radius;
-            re->min_opacity = stroke->brush.pressure_opacity_min;
-            re->hardness = stroke->brush.hardness;
 
             re->flags = 0;
             if (stroke->flags & StrokeFlag_ERASER) {
                 re->flags |= RenderElementFlags_ERASER;
-            }
-            if (stroke->flags & StrokeFlag_PRESSURE_TO_OPACITY) {
-                re->flags |= RenderElementFlags_PRESSURE_TO_OPACITY;
-            }
-            if (stroke->flags & StrokeFlag_DISTANCE_TO_OPACITY) {
-                re->flags |= RenderElementFlags_DISTANCE_TO_OPACITY;
             }
 
             mlt_assert(re->count > 1);
