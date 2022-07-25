@@ -12,9 +12,6 @@ struct Brush
 {
     i32 radius;  // In pixels. See milton->brush_sizes for canvas-space sizes.
     v4f color;
-    f32 _alpha;
-    f32 _pressure_opacity_min;  // Opacity from pressure.
-    f32 _hardness;
 };
 
 // TODO: These should be brush flags. Probably want to do it when we add a new member to the Brush struct..
