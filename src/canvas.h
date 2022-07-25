@@ -70,32 +70,7 @@ struct CanvasView
     v2l pan_center;             // In canvas scale
     v3f background_color;
     i32 working_layer_id;
-    f32 angle;                  // Rotation
-};
-
-// Used to load older MLT files.
-struct CanvasViewPreV9
-{
-    v2i screen_size;            // Size in pixels
-    i64 scale;                  // Zoom
-    v2i zoom_center;            // In pixels
-    v2l pan_center;             // In canvas scale
-    v3f background_color;
-    i32 working_layer_id;
-    i32 num_layers;
-    u8 padding[4];
-};
-struct CanvasViewPreV4
-{
-    v2i screen_size;            // Size in pixels
-    i32 scale;                  // Zoom
-    v2i zoom_center;            // In pixels
-    v2i pan_center;             // In canvas scale
-    i32 downsampling_factor;
-    i32 canvas_radius_limit;
-    v3f background_color;
-    i32 working_layer_id;
-    i32 num_layers;
+    f32 _angle;                 // Rotation
 };
 
 #pragma pack(pop)
@@ -111,7 +86,7 @@ Rect    bounding_box_for_last_n_points (Stroke* stroke, i32 last_n);
 Rect    raster_to_canvas_bounding_rect(CanvasView* view, i32 x, i32 y, i32 w, i32 h, i64 scale);
 Rect    canvas_to_raster_bounding_rect(CanvasView* view, Rect rect);
 
-void    reset_transform_at_origin(v2l* pan_center, i64* scale, f32* angle);
+void    reset_transform_at_origin(v2l* pan_center, i64* scale);
 
 // ---- Layer functions.
 

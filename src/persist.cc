@@ -148,26 +148,6 @@ milton_load(Milton* milton)
 
             milton->view->size = sizeof(CanvasView);
         }
-        else if ( milton_binary_version >= 4 && milton_binary_version < 9) {
-            init_view(milton->view, milton->settings->background_color, milton->view->screen_size.x, milton->view->screen_size.y); // defaults
-
-            size_t bytes_offset = offsetof(CanvasView, screen_size);
-
-            READ((u8*)milton->view + bytes_offset, sizeof(CanvasViewPreV9), 1, fd);
-
-            // Patch angle, which was stomped by the old num_layers member, which we don't use anymore.
-            milton->view->angle = 0.0f;
-        } else {
-            CanvasViewPreV4 legacy_view = {};
-            READ(&legacy_view, sizeof(CanvasViewPreV4), 1, fd);
-            milton->view->screen_size = legacy_view.screen_size;
-            milton->view->scale = legacy_view.scale;
-            milton->view->zoom_center = legacy_view.zoom_center;
-            milton->view->pan_center = VEC2L(legacy_view.pan_center * -1);
-            milton->view->background_color = legacy_view.background_color;
-            milton->view->working_layer_id = legacy_view.working_layer_id;
-            milton->view->angle = 0.0f;
-        }
 
         // The screen size might hurt us.
         milton->view->screen_size = saved_size;

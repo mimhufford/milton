@@ -49,15 +49,6 @@ gui_layer_window(MiltonInput* input, PlatformState* platform, Milton* milton, f3
     }
 
     if ( ImGui::Begin(loc(TXT_layers)) ) {
-        i32 angle = (milton->view->angle / PI) * 180;
-        while (angle < 0) { angle += 360; }
-        while (angle > 360) { angle -= 360; }
-        if (ImGui::SliderInt(loc(TXT_rotation), &angle, 0.0f, 360)) {
-            milton->view->angle = (f32)angle / 180.0f * PI;
-            input->flags |= (i32)MiltonInputFlags_PANNING;
-            gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
-        }
-
         CanvasView* view = milton->view;
         // left
         ImGui::BeginChild("left pane", ImVec2(150, 0), true);
@@ -617,10 +608,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                 }
 
                 if ( ImGui::MenuItem(loc(TXT_reset_view_at_origin)) ) {
-                    reset_transform_at_origin(
-                        &milton->view->pan_center,
-                        &milton->view->scale,
-                        &milton->view->angle);
+                    reset_transform_at_origin(&milton->view->pan_center, &milton->view->scale);
                     gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
                 }
 

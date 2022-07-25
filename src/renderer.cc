@@ -924,13 +924,10 @@ gpu_update_canvas(RenderBackend* r, CanvasState* canvas, CanvasView* view)
         r->stroke_clear_program,
     };
 
-    f32 cos_angle = cosf(view->angle);
-    f32 sin_angle = sinf(view->angle);
-
     // GLSL is column-major
-    f32 matrix[] = { cos_angle, sin_angle, -sin_angle, cos_angle };
+    f32 matrix[] = {1,0,0,1};
 
-    f32 matrix_inverse[] = { cos_angle, -sin_angle, sin_angle, cos_angle };
+    f32 matrix_inverse[] = {1,0,0,1};
 
     for (sz i = 0; i < array_count(ps); ++i) {
         gl::set_uniform_mat2(ps[i], "u_rotation", matrix);
@@ -1848,13 +1845,7 @@ gpu_render_to_buffer(Milton* milton, u8* buffer, i32 scale, i32 x, i32 y, i32 w,
 
     milton_set_zoom_at_point(milton, center);
 
-    f32 cos_angle = cosf(milton->view->angle);
-    f32 sin_angle = sinf(milton->view->angle);
-
-    v2f pan_delta_rotated = v2f{pan_delta.x * cos_angle - pan_delta.y * sin_angle, pan_delta.y * cos_angle + pan_delta.x * sin_angle };
-
-    milton->view->pan_center =
-        milton->view->pan_center + v2f_to_v2l(pan_delta_rotated)*milton->view->scale;
+    milton->view->pan_center += v2l{pan_delta.x, pan_delta.y}*milton->view->scale;
 
     milton->view->screen_size = v2i{buf_w, buf_h};
     r->width = buf_w;

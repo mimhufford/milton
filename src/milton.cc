@@ -38,7 +38,6 @@ init_view(CanvasView* view, v3f background_color, i32 width, i32 height)
     view->screen_size       = size;
     view->zoom_center       = size / 2;
     view->scale             = MILTON_DEFAULT_SCALE;
-    view->angle             = 0.0f;
     view->screen_size       = { width, height };
 }
 
@@ -787,19 +786,7 @@ milton_resize_and_pan(Milton* milton, v2l pan_delta, v2i new_screen_size)
 
     if ( new_screen_size.w < milton->max_width && new_screen_size.h < milton->max_height ) {
         milton->view->screen_size = new_screen_size;
-
-        f32 x = pan_delta.x;
-        f32 y = pan_delta.y;
-
-        f32 cos_angle = cosf(milton->view->angle);
-        f32 sin_angle = sinf(milton->view->angle);
-
-        v2f deltaf = v2f{x * cos_angle - y * sin_angle, y * cos_angle + x * sin_angle };
-        // Add delta to pan vector
-        v2l pan_center = milton->view->pan_center - (v2f_to_v2l(deltaf) * milton->view->scale);
-
-        milton->view->pan_center = pan_center;
-
+        milton->view->pan_center -= pan_delta * milton->view->scale;
         upload_gui(milton);
     } else {
         milton_die_gracefully("Fatal error. Screen size is more than Milton can handle.");
@@ -1323,21 +1310,6 @@ transform_tick(Milton* milton, MiltonInput const* input)
             t->fsm = TransformModeFSM::ROTATING;
             t->last_point = point;
         }
-        else if (t->fsm == TransformModeFSM::ROTATING) {
-            // Rotate!
-            const v2f center = v2i_to_v2f(milton->view->screen_size / 2);
-            const v2f a = point - center;
-            const v2f b = t->last_point - center;
-            const f32 lena = magnitude(a);
-            const f32 lenb = magnitude(b);
-            if (lena > 0.0f && lenb > 0.0f) {
-                const f32 cos_angle = clamp(DOT(b, a) / (lena * lenb), 0.0f, 1.0f);
-                const f32 sign = orientation(center, t->last_point, point) > 0 ? -1.0f : 1.0f;
-                milton->view->angle += sign * acosf(cos_angle);
-                t->last_point = point;
-                gpu_update_canvas(milton->renderer, milton->canvas, milton->view);
-            }
-        }
     }
     if (input->flags & MiltonInputFlags_CLICKUP) {
         if (t->fsm == TransformModeFSM::ROTATING) {
@@ -1848,10 +1820,8 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
     }
 
     static u64 scale_of_last_full_redraw = 0;
-    static f32 angle_of_last_full_redraw = 0.0f;
 
-    if (scale_of_last_full_redraw != milton_render_scale(milton) ||
-        angle_of_last_full_redraw != milton->view->angle ) {
+    if (scale_of_last_full_redraw != milton_render_scale(milton)) {
         // We want to draw everything when we're scaling up and down.
         milton->render_settings.do_full_redraw = true;
     }
@@ -1865,7 +1835,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         // should be freed from GPU memory.
         clip_flags = ClipFlags_UPDATE_GPU_DATA;
         scale_of_last_full_redraw = milton_render_scale(milton);
-        angle_of_last_full_redraw = milton->view->angle;
     }
     else if (has_working_stroke) {
         Rect bounds  = canvas_to_raster_bounding_rect(milton->view, milton->working_stroke.bounding_rect);
