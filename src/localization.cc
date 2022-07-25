@@ -59,9 +59,6 @@ init_localization()
         EN(TXT_cancel, "Cancel");
         EN(TXT_view, "View");
         EN(TXT_toggle_gui_visibility, "Toggle GUI Visibility");
-        EN(TXT_layers, "Layers");
-        EN(TXT_new_layer, "New Layer");
-        EN(TXT_rename, "Rename");
         EN(TXT_move, "Move");
         EN(TXT_move_canvas, "Move canvas");
         EN(TXT_stop_moving_canvas, "Stop moving");
@@ -174,7 +171,6 @@ init_localization()
         ES(TXT_cancel, "Cancelar");
         ES(TXT_view, "Vista");
         ES(TXT_toggle_gui_visibility, "Mostrar/Ocultar Interfaz");
-        ES(TXT_layers, "Capas");
     }
     // Non-Mac:
     //  C(x) => [Ctrl+x]

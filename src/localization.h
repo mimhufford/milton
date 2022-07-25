@@ -36,7 +36,6 @@ enum Texts
     TXT_cancel,
     TXT_view,
     TXT_toggle_gui_visibility,
-    TXT_layers,
 
     // ==== Translation to spanish completed until this point
 
@@ -45,8 +44,6 @@ enum Texts
     TXT_switch_to_primitive_rectangle,
     TXT_switch_to_primitive_grid,
     TXT_help_me,
-    TXT_new_layer,
-    TXT_rename,
     TXT_move,
     TXT_move_canvas,
     TXT_stop_moving_canvas,

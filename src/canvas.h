@@ -9,8 +9,6 @@
 
 struct Layer
 {
-    i32 id;
-
     StrokeList strokes;
 
     Layer* prev;
@@ -47,11 +45,7 @@ void    reset_transform_at_origin(v2l* pan_center);
 
 // ---- Layer functions.
 namespace layer {
-    Layer*  get_topmost (Layer* root);
-    Layer*  get_by_id (Layer* root_layer, i32 id);
+    i64     count_strokes (Layer* root);
     Stroke* layer_push_stroke (Layer* layer, Stroke stroke);
     i32     number_of_layers (Layer* root);
-    void    free_layers (Layer* root);
-    i64     count_strokes (Layer* root);
-    i64     count_clipped_strokes (Layer* root, i32 num_workers);
 }

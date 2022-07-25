@@ -232,7 +232,6 @@ milton_primitive_line_input(Milton* milton, MiltonInput const* input, b32 end_st
             ws->pressures[0] = ws->pressures[1] = 1.0f;
             milton->working_stroke.num_points = 2;
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             milton->working_stroke.points[1] = point;
@@ -258,7 +257,6 @@ milton_primitive_rectangle_input(Milton* milton, MiltonInput const* input, b32 e
             }
             ws->num_points = 5;
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             v2l p0 = canvas_to_raster(milton->view, ws->points[0]);
@@ -292,7 +290,6 @@ milton_primitive_grid_input(Milton* milton, MiltonInput const* input, b32 end_st
                 ws->pressures[i] = 1.0f;
             }
             ws->brush                         = milton_get_brush(milton);
-            ws->layer_id                      = milton->canvas->root_layer->id;
         }
         else if ( milton->primitive_fsm == Primitive_DRAWING ) {
             v2l p0 = canvas_to_raster(milton->view, ws->points[0]);
@@ -391,7 +388,6 @@ milton_stroke_input(Milton* milton, MiltonInput const* input)
     }
 
     ws->brush    = milton_get_brush(milton);
-    ws->layer_id = milton->canvas->root_layer->id;
 
     for ( int input_i = 0; input_i < input->input_count; ++input_i ) {
 
@@ -907,16 +903,10 @@ void
 milton_new_layer(Milton* milton)
 {
     CanvasState* canvas = milton->canvas;
-    i32 id = canvas->layer_guid++;
-    milton_log("Increased guid to %d\n", canvas->layer_guid);
-
     Layer* layer = arena_alloc_elem(&canvas->arena, Layer);
     canvas->root_layer = layer;
-    {
-        layer->id = id;
-        layer->strokes.arena = &canvas->arena;
-        strokelist_init_bucket(&layer->strokes.root);
-    }
+    layer->strokes.arena = &canvas->arena;
+    strokelist_init_bucket(&layer->strokes.root);
 }
 
 b32
@@ -947,7 +937,6 @@ milton_validate(Milton* milton)
     i32* layer_ids = (i32*)mlt_calloc((size_t)num_layers, sizeof(i32), "Validate");
     i64 i = 0;
     for ( Layer* l = milton->canvas->root_layer; l != NULL; l = l->next ) {
-        layer_ids[i] = l->id;
         ++i;
     }
 
@@ -1142,7 +1131,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
             // Grab undo elements. They might be from deleted layers, so discard dead results.
             while ( milton->canvas->history.count > 0 ) {
                 HistoryElement h = pop(&milton->canvas->history);
-                Layer* l = layer::get_by_id(milton->canvas->root_layer, h.layer_id);
+                Layer* l = milton->canvas->root_layer;
                 // found a thing to undo.
                 if ( l ) {
                     if ( l->strokes.count > 0 ) {
@@ -1162,7 +1151,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 HistoryElement h = pop(&milton->canvas->redo_stack);
                 switch ( h.type ) {
                 case HistoryElement_STROKE_ADD: {
-                    Layer* l = layer::get_by_id(milton->canvas->root_layer, h.layer_id);
+                    Layer* l = milton->canvas->root_layer;
                     if ( l && count(&milton->canvas->stroke_graveyard) > 0 ) {
                         Stroke stroke = pop(&milton->canvas->stroke_graveyard);
                         if ( stroke.layer_id == h.layer_id ) {
@@ -1318,7 +1307,6 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
                 CanvasState* canvas = milton->canvas;
                 copy_stroke(&canvas->arena, milton->view, &milton->working_stroke, &new_stroke);
                 {
-                    new_stroke.layer_id = milton->canvas->root_layer->id;
                     new_stroke.bounding_rect = bounding_box_for_stroke(&new_stroke);
 
                     new_stroke.id = milton->canvas->stroke_id_count++;
@@ -1334,7 +1322,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
 
                 // Invalidate working stroke render element
 
-                HistoryElement h = { HistoryElement_STROKE_ADD, milton->canvas->root_layer->id };
+                HistoryElement h = { HistoryElement_STROKE_ADD, 0 };
                 push(&milton->canvas->history, h);
 
                 reset_working_stroke(milton);

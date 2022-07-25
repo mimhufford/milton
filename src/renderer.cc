@@ -1308,13 +1308,10 @@ gpu_clip_strokes_and_update(Arena* arena,
                 bucket_i += 1;
             }
 
-            // Add the working stroke on the current layer.
-            if ( working_stroke->layer_id == l->id ) {
-                if ( working_stroke->num_points > 0 ) {
-                    gpu_cook_stroke(arena, r, working_stroke, CookStroke_UPDATE_WORKING_STROKE);
+            if ( working_stroke->num_points > 0 ) {
+                gpu_cook_stroke(arena, r, working_stroke, CookStroke_UPDATE_WORKING_STROKE);
 
-                    push(clip_array, *get_render_element(working_stroke->render_handle));
-                }
+                push(clip_array, *get_render_element(working_stroke->render_handle));
             }
 
             auto* p = push(clip_array, layer_element);

@@ -79,7 +79,6 @@ milton_load(Milton* milton)
     // Declare variables here to silence compiler warnings about using GOTO.
     i32 history_count = 0;
     i32 num_layers = 0;
-    i32 saved_working_layer_id = 0;
     int err = 0;
 
     i32 layer_guid = 0;
@@ -152,9 +151,6 @@ milton_load(Milton* milton)
         // The screen size might hurt us.
         milton->view->screen_size = saved_size;
 
-        // The process of loading changes state. working_layer_id changes when creating layers.
-        saved_working_layer_id = milton->canvas->root_layer->id;
-
         if ( milton_magic != MILTON_MAGIC_NUMBER ) {
             platform_dialog("MLT file could not be loaded. Magic number mismatch.", "Problem");
             milton_unset_last_canvas_fname();
@@ -169,7 +165,6 @@ milton_load(Milton* milton)
         for ( int layer_i = 0; ok && layer_i < num_layers; ++layer_i ) {
             if (ok) { milton_new_layer(milton); }
             Layer* layer = milton->canvas->root_layer;
-            READ(&layer->id, sizeof(i32), 1, fd);
 
             if ( ok ) {
                 i32 num_strokes = 0;
@@ -233,12 +228,9 @@ milton_load(Milton* milton)
                     }
                 }
 
-                // Set the flags of the working layer to the last stroke of the working layer.
-                if (layer->id == saved_working_layer_id) {
-                    i64 stroke_count = count(&layer->strokes);
-                    if (stroke_count > 0) {
-                        milton->working_stroke.flags = layer->strokes[ stroke_count - 1]->flags;
-                    }
+                i64 stroke_count = count(&layer->strokes);
+                if (stroke_count > 0) {
+                    milton->working_stroke.flags = layer->strokes[ stroke_count - 1]->flags;
                 }
             }
         }
@@ -383,8 +375,7 @@ milton_save(Milton* milton)
 
                     bool could_write_strokes = true;
 
-                    if ( write_data(&layer->id, sizeof(i32), 1, fd) &&
-                         write_data(&num_strokes, sizeof(i32), 1, fd) ) {
+                    if ( write_data(&num_strokes, sizeof(i32), 1, fd) ) {
                         for ( i32 stroke_i = 0;
                               could_write_strokes && stroke_i < num_strokes;
                               ++stroke_i ) {

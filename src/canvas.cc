@@ -141,37 +141,9 @@ namespace layer
     i64
     count_strokes(Layer* root)
     {
-        i64 count = 0;
-        for ( Layer *layer = root;
-              layer != NULL;
-              layer = layer->next ) {
-            count += layer->strokes.count;
-        }
-        return count;
+        return root->strokes.count;
     }
 
-    Layer*
-    get_topmost(Layer* root)
-    {
-        Layer* layer = root;
-        while ( layer->next ) {
-            layer = layer->next;
-        }
-        return layer;
-    }
-    Layer*
-    get_by_id(Layer* root_layer, i32 id)
-    {
-        Layer* l = NULL;
-        for ( Layer* layer = root_layer; layer; layer = layer->next ) {
-            if ( layer->id == id ) {
-                l = layer;
-            }
-        }
-        return l;
-    }
-
-    // Push stroke at the top of the current layer
     Stroke*
     layer_push_stroke(Layer* layer, Stroke stroke)
     {
@@ -182,12 +154,7 @@ namespace layer
     i32
     number_of_layers(Layer* layer)
     {
-        int n = 0;
-        while ( layer ) {
-            ++n;
-            layer = layer->next;
-        }
-        return n;
+        return 1;
     }
 
 }  // namespace layer
