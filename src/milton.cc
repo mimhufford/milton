@@ -802,7 +802,7 @@ milton_save_postlude(Milton* milton)
 {
     MiltonPersist* p = milton->persist;
     p->last_save_time = platform_get_walltime();
-    p->last_save_stroke_count = layer::count_strokes(milton->canvas->root_layer);
+    p->last_save_stroke_count = milton->canvas->root_layer->strokes.count;
 
     milton->flags &= ~MiltonStateFlags_LAST_SAVE_FAILED;
 }
@@ -922,7 +922,7 @@ milton_validate(Milton* milton)
     // Make sure that the history reflects the strokes that exist
 
     i64 history_count = milton->canvas->history;
-    i64 stroke_count = layer::count_strokes(milton->canvas->root_layer);
+    i64 stroke_count = milton->canvas->root_layer->strokes.count;
 
     if ( history_count != stroke_count ) {
         milton_log("WARNING: Recreating history. File says History: %d(max %d) Actual strokes: %d\n",
@@ -1375,7 +1375,7 @@ milton_update_and_render(Milton* milton, MiltonInput const* input)
         if (    !(milton->flags & MiltonStateFlags_RUNNING)
              && (milton->flags & MiltonStateFlags_LAST_SAVE_FAILED)
              && (milton->flags & MiltonStateFlags_MOVE_FILE_FAILED)
-             && milton->persist->last_save_stroke_count != layer::count_strokes(milton->canvas->root_layer) ) {
+             && milton->persist->last_save_stroke_count != milton->canvas->root_layer->strokes.count ) {
             // TODO: Stop using MoveFileEx?
             //  Why does MoveFileEx fail? Ask someone who knows this stuff.
             // Wait a moment and try again. If this fails, prompt to save somewhere else.

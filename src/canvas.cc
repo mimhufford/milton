@@ -138,12 +138,6 @@ canvas_rect_to_raster_rect(CanvasView* view, Rect canvas_rect)
 
 namespace layer
 {
-    i64
-    count_strokes(Layer* root)
-    {
-        return root->strokes.count;
-    }
-
     Stroke*
     layer_push_stroke(Layer* layer, Stroke stroke)
     {

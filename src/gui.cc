@@ -166,7 +166,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
             if ( ImGui::BeginMenu(loc(TXT_file)) ) {
                 if ( ImGui::MenuItem(loc(TXT_new_milton_canvas)) ) {
                     b32 save_file = false;
-                    if ( layer::count_strokes(milton->canvas->root_layer) > 0 ) {
+                    if ( milton->canvas->root_layer->strokes.count > 0 ) {
                         if ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) {
                             save_file = platform_dialog_yesno(loc(TXT_default_will_be_cleared), "Save?");
                         }
@@ -196,7 +196,7 @@ gui_menu(MiltonInput* input, PlatformState* platform, Milton* milton, b32& show_
                     // If current canvas is MiltonPersist, then prompt to save
                     if ( ( milton->flags & MiltonStateFlags_DEFAULT_CANVAS ) ) {
                         b32 save_file = false;
-                        if ( layer::count_strokes(milton->canvas->root_layer) > 0 ) {
+                        if ( milton->canvas->root_layer->strokes.count > 0 ) {
                             save_file = platform_dialog_yesno(loc(TXT_default_will_be_cleared), "Save?");
                         }
                         if ( save_file ) {
@@ -552,7 +552,7 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
             ImGui::SetNextWindowSize(ImVec2(ui_scale*500, ui_scale*100), ImGuiSetCond_FirstUseEver);
             if ( ImGui::Begin("History Slider") ) {
                 ImGui::SliderInt("History", &gui->history, 0,
-                                 layer::count_strokes(milton->canvas->root_layer));
+                                 milton->canvas->root_layer->strokes.count);
             } ImGui::End();
 
         }
@@ -717,7 +717,7 @@ milton_imgui_tick(MiltonInput* input, PlatformState* platform,  Milton* milton, 
 
             ImGui::Dummy({0,30});
 
-            i64 stroke_count = layer::count_strokes(milton->canvas->root_layer);
+            i64 stroke_count = milton->canvas->root_layer->strokes.count;
 
             auto* view = milton->view;
             int screen_height = view->screen_size.h * view->scale;
